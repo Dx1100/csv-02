@@ -34,13 +34,23 @@ const schema = [
     </p>
 
     <div class="tool">
-      <div class="options">
-        <label class="field">Direction
-          <select id="direction">
-            <option value="c2j">CSV → JSON</option>
-            <option value="j2c">JSON → CSV</option>
-          </select>
-        </label>
+      <div class="direction-container">
+        <div class="direction-info">
+          <span class="direction-badge"><span class="direction-badge-dot"></span> Conversion Direction</span>
+          <p class="direction-label">Select conversion mode:</p>
+        </div>
+        <div class="direction-btn-group" role="tablist" aria-label="Conversion Direction">
+          <button type="button" class="direction-btn active" data-dir="c2j" role="tab" aria-selected="true">
+            <span>CSV</span> <span class="arrow-icon">→</span> <span>JSON</span>
+          </button>
+          <button type="button" class="direction-btn" data-dir="j2c" role="tab" aria-selected="false">
+            <span>JSON</span> <span class="arrow-icon">→</span> <span>CSV</span>
+          </button>
+        </div>
+        <select id="direction" class="direction-select-sync" aria-label="Conversion direction">
+          <option value="c2j" selected>CSV → JSON</option>
+          <option value="j2c">JSON → CSV</option>
+        </select>
       </div>
       <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
         <p><strong id="dz-label">Drop your CSV file here</strong> or click to browse</p>
@@ -88,6 +98,7 @@ const schema = [
       var worker = new Worker('/workers/csv-worker.js');
       var $ = function (id) { return document.getElementById(id); };
       var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+      T.setupDirectionButtons('direction');
 
       dirSel.addEventListener('change', function () {
         var c2j = dirSel.value === 'c2j';

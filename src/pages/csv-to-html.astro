@@ -4,14 +4,16 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I convert a CSV file to an HTML table?', a: 'Select "CSV → HTML", upload your CSV file, and click Convert. The converter parses the table structure and creates a clean HTML <table> code block that you can download or embed.' },
-  { q: 'How do I convert an HTML table to CSV?', a: 'Select "HTML → CSV", upload an HTML document (.html or .htm), and click Convert. The tool extracts all rows and cells from the <table> elements and outputs a structured CSV file.' },
-  { q: 'Does the generated HTML table have default styles?', a: 'No. The converter outputs clean semantic HTML (using standard <table>, <thead>, <tbody>, <th>, <tr>, <td> elements) without styling, making it simple for you to style with your own CSS stylesheet.' },
-  { q: 'How are HTML tag characters (<, >, &) in cells handled?', a: 'All cell values are properly decoded or entity-escaped to prevent breaking layouts or corrupting cell contents.' },
-  { q: 'Is there a limit to how many rows I can convert?', a: 'The processing runs directly in your browser using client-side Web Workers, meaning files are parsed locally without crashing or timing out, subject only to your device memory.' }
+  { q: 'How do I convert a CSV file to an HTML table?', a: 'Select "CSV → HTML" from the direction selector, upload or drop your CSV file, and click Convert. The tool parses column headers into <th> cells within a <thead>, maps rows into <td> cells within a <tbody>, escapes special characters, and outputs clean semantic HTML table code.' },
+  { q: 'How do I convert an HTML table back into a CSV file?', a: 'Select "HTML → CSV", upload your HTML file (.html, .htm, or .txt), and click Convert. The tool parses the document structure, reads all rows and cells from the <table> elements, cleans whitespace, and generates a structured CSV spreadsheet file.' },
+  { q: 'What HTML structure does the converter produce?', a: 'It outputs clean, semantic HTML5 markup: a <table> element containing <thead> and <tbody>, with <tr>, <th>, and <td> cells. It avoids hardcoded inline CSS styles or deprecated presentation attributes, allowing you to easily style the table with your own CSS classes.' },
+  { q: 'How are HTML entity characters (&, <, >, ") handled?', a: 'When converting CSV to HTML, special characters such as "&", "<", ">", and quotes are properly escaped to their HTML entities (&amp;, &lt;, &gt;, &quot;) to prevent syntax errors or rendering issues. When converting HTML to CSV, HTML entities are decoded back into readable text.' },
+  { q: 'What if my HTML file contains navigation, styling, or multiple tables?', a: 'The tool uses browser DOM parsing to locate the primary <table> element within the page, ignoring external scripts, styles, navigation bars, and wrappers. It extracts only the tabular data rows and cell text.' },
+  { q: 'Can I copy-paste HTML table markup into a file to convert it?', a: 'Yes. You can paste any HTML snippet containing a <table> tag into a text file, save it as a .html or .txt file, and upload it into the converter.' },
+  { q: 'Is my data or HTML document uploaded to any server?', a: 'No. All parsing and conversion occurs completely client-side in your web browser. Neither your CSV data nor your HTML files are ever uploaded or transmitted across the network.' }
 ];
 const schema = [
-  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV ⇄ HTML Table Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to HTML table and HTML table to CSV converter. Convert spreadsheet values into HTML markup and vice versa locally in browser.' },
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV ⇄ HTML Table Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to HTML table and HTML table to CSV converter. Convert spreadsheet values into semantic HTML tables and vice versa locally in browser.' },
   { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
   { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
@@ -34,13 +36,23 @@ const schema = [
     </p>
 
     <div class="tool">
-      <div class="options">
-        <label class="field">Direction
-          <select id="direction">
-            <option value="c2h">CSV → HTML</option>
-            <option value="h2c">HTML → CSV</option>
-          </select>
-        </label>
+      <div class="direction-container">
+        <div class="direction-info">
+          <span class="direction-badge"><span class="direction-badge-dot"></span> Conversion Direction</span>
+          <p class="direction-label">Select conversion mode:</p>
+        </div>
+        <div class="direction-btn-group" role="tablist" aria-label="Conversion Direction">
+          <button type="button" class="direction-btn active" data-dir="c2h" role="tab" aria-selected="true">
+            <span>CSV</span> <span class="arrow-icon">→</span> <span>HTML</span>
+          </button>
+          <button type="button" class="direction-btn" data-dir="h2c" role="tab" aria-selected="false">
+            <span>HTML</span> <span class="arrow-icon">→</span> <span>CSV</span>
+          </button>
+        </div>
+        <select id="direction" class="direction-select-sync" aria-label="Conversion direction">
+          <option value="c2h" selected>CSV → HTML</option>
+          <option value="h2c">HTML → CSV</option>
+        </select>
       </div>
 
       <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
@@ -59,18 +71,29 @@ const schema = [
     <AdSlot />
 
     <h2>How the conversion works</h2>
+    
+    <h3>Direction 1: Converting CSV to HTML Table</h3>
     <ol class="steps">
-      <li><strong>Select direction:</strong> Choose <em>CSV → HTML</em> to format rows into HTML table tags, or <em>HTML → CSV</em> to extract tables from web pages.</li>
-      <li><strong>Select your file:</strong> Upload a <code>.csv</code>, <code>.tsv</code>, or <code>.html</code> file. The preview box reflects the file structure instantly.</li>
-      <li><strong>Start conversion:</strong> Click Convert to process table rows in a local Web Worker.</li>
-      <li><strong>Download your result:</strong> Download the clean <code>.html</code> or <code>.csv</code> file directly to your device.</li>
+      <li><strong>Select "CSV → HTML":</strong> Choose this option from the direction dropdown above.</li>
+      <li><strong>Add your CSV file:</strong> Drag and drop your <code>.csv</code> or <code>.tsv</code> file into the box to view a table preview.</li>
+      <li><strong>Generate semantic markup:</strong> Click Convert. The converter treats the first line as table headers (<code>&lt;th&gt;</code>) within <code>&lt;thead&gt;</code> and all subsequent rows as table data cells (<code>&lt;td&gt;</code>) inside <code>&lt;tbody&gt;</code>, escaping special characters to valid HTML entities.</li>
+      <li><strong>Download your HTML:</strong> Save the output as a <code>.html</code> file or copy the table snippet into your web project or CMS editor.</li>
+    </ol>
+
+    <h3>Direction 2: Converting HTML Table to CSV</h3>
+    <ol class="steps">
+      <li><strong>Select "HTML → CSV":</strong> Switch the direction dropdown to enable HTML table extraction.</li>
+      <li><strong>Upload your HTML document:</strong> Drop your <code>.html</code>, <code>.htm</code>, or <code>.txt</code> file containing a web table.</li>
+      <li><strong>Extract spreadsheet data:</strong> Click Convert. The parser uses the browser DOM to locate the table, extract text contents from headers and rows, strip inner tags, clean whitespace, and compile the data into CSV format.</li>
+      <li><strong>Download your CSV:</strong> Save the extracted file as a clean <code>.csv</code> ready for Microsoft Excel, Google Sheets, or data analysis tools.</li>
     </ol>
 
     <h2>Why use our offline HTML table generator?</h2>
     <ul>
-      <li><strong>Bidirectional:</strong> Quickly toggle between generating HTML markup and parsing HTML tables back into spreadsheets.</li>
-      <li><strong>Escaped HTML values:</strong> Securely converts HTML symbols inside your dataset, avoiding display errors.</li>
-      <li><strong>Clean &amp; Unstyled:</strong> Generated tables have no inline styling or bloat, making them 100% CSS friendly.</li>
+      <li><strong>Two-Way Bidirectional Utility:</strong> Generate clean HTML table snippets from spreadsheets, or scrape web tables directly into standard CSV files.</li>
+      <li><strong>Clean &amp; Semantic HTML:</strong> Generates standards-compliant <code>&lt;table&gt;</code> markup with proper <code>&lt;thead&gt;</code> and <code>&lt;tbody&gt;</code> divisions and zero inline style bloat.</li>
+      <li><strong>Automatic Entity Escaping:</strong> Safely handles special characters like <code>&amp;</code>, <code>&lt;</code>, and <code>&gt;</code> so your code renders without layout breaks.</li>
+      <li><strong>100% Private &amp; Secure:</strong> Runs entirely in your local browser environment with zero network transmission.</li>
     </ul>
 
     <h2>Frequently asked questions</h2>
@@ -100,6 +123,7 @@ const schema = [
       var worker = new Worker('/workers/csv-worker.js');
       var $ = function (id) { return document.getElementById(id); };
       var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+      T.setupDirectionButtons('direction');
 
       dirSel.addEventListener('change', function () {
         var c2h = dirSel.value === 'c2h';

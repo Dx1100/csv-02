@@ -27,6 +27,7 @@ self.onmessage = function (e) {
       case 'extract-columns': return extractColumns(d.file, d.options);
       case 'csv-view': return csvView(d.file, d.options);
       case 'csv-to-xml': return csvToXml(d.file);
+      case 'xml-to-csv': return xmlToCsv(d.file, d.content);
       case 'csv-to-yaml': return csvToYaml(d.file);
       case 'yaml-to-csv': return yamlToCsv(d.file);
       case 'csv-to-markdown': return csvToMarkdown(d.file);
@@ -586,4 +587,96 @@ function htmlToCsv(file, parsedTableRows) {
   post('file', { name: baseName(file.name) + '.csv', content: csvOutput });
   post('done', { rows: Math.max(0, rows.length - 1), parts: 1 });
 }
+
+function xmlToCsv(file, parsedXmlRows) {
+  if (parsedXmlRows && Array.isArray(parsedXmlRows) && parsedXmlRows.length > 0) {
+    var csv = Papa.unparse(parsedXmlRows);
+    post('file', { name: baseName(file.name) + '.csv', content: csv });
+    post('done', { rows: Math.max(0, parsedXmlRows.length - 1), parts: 1 });
+    return;
+  }
+
+  // Regex fallback parser for XML records inside worker
+  var text = new FileReaderSync().readAsText(file);
+  // Match repeating elements: find tags that repeat inside root
+  var tagMatch = text.match(/<([a-zA-Z0-9_.-]+)[^>]*>[\s\S]*?<\/\1>/gi);
+  if (!tagMatch || !tagMatch.length) {
+    throw new Error('No repeating XML elements found to convert to CSV.');
+  }
+
+  // Determine repeating record tag
+  var recordCounts = {};
+  tagMatch.forEach(function (m) {
+    var tagName = (m.match(/<([a-zA-Z0-9_.-]+)/) || [])[1];
+    if (tagName && tagName.toLowerCase() !== 'root') {
+      recordCounts[tagName] = (recordCounts[tagName] || 0) + 1;
+    }
+  });
+
+  var primaryTag = null, maxCount = 0;
+  for (var t in recordCounts) {
+    if (recordCounts[t] > maxCount) {
+      maxCount = recordCounts[t];
+      primaryTag = t;
+    }
+  }
+
+  if (!primaryTag) {
+    throw new Error('Could not identify repeating XML record elements.');
+  }
+
+  var recordRegex = new RegExp('<' + primaryTag + '[^>]*>([\\s\\S]*?)<\\/' + primaryTag + '>', 'gi');
+  var records = [];
+  var match;
+  while ((match = recordRegex.exec(text)) !== null) {
+    records.push(match[1]);
+  }
+
+  if (!records.length) {
+    throw new Error('Could not extract records for XML element <' + primaryTag + '>.');
+  }
+
+  // Find all field tags across records
+  var headerSet = Object.create(null);
+  var headers = [];
+  records.forEach(function (rec) {
+    var fieldMatches = rec.match(/<([a-zA-Z0-9_.-]+)[^>]*>([\s\S]*?)<\/\1>/gi);
+    if (fieldMatches) {
+      fieldMatches.forEach(function (f) {
+        var fn = (f.match(/<([a-zA-Z0-9_.-]+)/) || [])[1];
+        if (fn && !headerSet[fn]) {
+          headerSet[fn] = true;
+          headers.push(fn);
+        }
+      });
+    }
+  });
+
+  if (!headers.length) {
+    throw new Error('No inner fields found inside XML records.');
+  }
+
+  var rows = [headers];
+  records.forEach(function (rec) {
+    var row = [];
+    headers.forEach(function (h) {
+      var fieldRegex = new RegExp('<' + h + '[^>]*>([\\s\\S]*?)<\\/' + h + '>', 'i');
+      var m = rec.match(fieldRegex);
+      var val = m ? m[1].replace(/<[^>]+>/g, '')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&apos;/g, "'")
+                        .trim() : '';
+      row.push(val);
+    });
+    rows.push(row);
+  });
+
+  var resultCsv = Papa.unparse(rows);
+  post('file', { name: baseName(file.name) + '.csv', content: resultCsv });
+  post('done', { rows: Math.max(0, rows.length - 1), parts: 1 });
+}
+
 

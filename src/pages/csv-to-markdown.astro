@@ -4,14 +4,16 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I convert a CSV to a Markdown table?', a: 'Select "CSV → Markdown", choose your CSV file, and click Convert. The tool parses headers and rows, generating a markdown table grid with formatting separators (e.g. "|" and "---"). Copy or download the result.' },
-  { q: 'How do I convert a Markdown table to CSV?', a: 'Select "Markdown → CSV", drop your Markdown (.md or .txt) file, and click Convert. The tool automatically detects the markdown table structure, cleans column boundaries, and exports a standard CSV file.' },
-  { q: 'Does this output support GitHub Flavored Markdown (GFM)?', a: 'Yes. The generated output is a standard GFM-compliant table, which works on GitHub, GitLab, Reddit, Notion, Dev.to, and general markdown editors.' },
-  { q: 'How are vertical pipes ("|") in cells handled?', a: 'When converting to Markdown, vertical pipes are escaped as "\\|". When converting Markdown back to CSV, escaped pipes are properly decoded into regular characters.' },
-  { q: 'Is my content uploaded to your server?', a: 'No, everything is completed inside your web browser. No data leaves your machine, ensuring complete privacy.' }
+  { q: 'How do I convert a CSV file to a Markdown table?', a: 'Select "CSV → Markdown" from the direction menu, drop your CSV or TSV file, and click Convert. The tool parses column headers, inserts a standard GitHub Flavored Markdown (GFM) separator row (| --- | --- |), escapes reserved pipe characters, and outputs a formatted Markdown table (.md).' },
+  { q: 'How do I convert a Markdown table back into a CSV file?', a: 'Select "Markdown → CSV", upload or drop your Markdown file (.md, .markdown, or .txt), and click Convert. The converter identifies the table structure, removes alignment markers, restores escaped pipe symbols and line breaks, and exports a standard RFC 4180 CSV spreadsheet.' },
+  { q: 'What Markdown table syntax does this tool generate and accept?', a: 'The tool uses standard GitHub Flavored Markdown (GFM) pipe-table syntax. This format is natively supported by GitHub, GitLab, Reddit, Notion, Obsidian, Dev.to, Static Site Generators (Astro, Hugo, Jekyll), and standard Markdown parsers.' },
+  { q: 'How are vertical pipes ("|") and multiline breaks in cells handled?', a: 'When converting CSV to Markdown, literal vertical pipes are escaped as "\\|" to prevent column splitting, and newlines within cells are replaced with HTML "<br>" tags. When converting Markdown back to CSV, "\\|" is decoded back to "|" and "<br>" tags are restored to genuine line breaks.' },
+  { q: 'What file types can I upload for Markdown to CSV conversion?', a: 'You can upload .md, .markdown, or .txt files. You can even paste a Markdown table into a text file and drop it in. The parser extracts the tabular lines and ignores external text or headers.' },
+  { q: 'Can I convert Markdown tables copied from GitHub READMEs or Notion?', a: 'Yes. Any pipe-delimited table copied from a README, documentation page, or Notion export can be saved as a .md or .txt file and converted directly into a clean CSV spreadsheet.' },
+  { q: 'Is my data or file uploaded to any remote server?', a: 'No. All processing occurs 100% locally in your web browser via a client-side Web Worker. Your CSV and Markdown data never leaves your device, ensuring complete confidentiality.' }
 ];
 const schema = [
-  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV ⇄ Markdown Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to Markdown and Markdown to CSV converter. Convert tabular data locally in the browser with zero uploads.' },
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV ⇄ Markdown Table Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to Markdown and Markdown to CSV converter. Convert tabular data into GitHub Flavored Markdown tables and back locally in browser.' },
   { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
   { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
@@ -34,13 +36,23 @@ const schema = [
     </p>
 
     <div class="tool">
-      <div class="options">
-        <label class="field">Direction
-          <select id="direction">
-            <option value="c2m">CSV → Markdown</option>
-            <option value="m2c">Markdown → CSV</option>
-          </select>
-        </label>
+      <div class="direction-container">
+        <div class="direction-info">
+          <span class="direction-badge"><span class="direction-badge-dot"></span> Conversion Direction</span>
+          <p class="direction-label">Select conversion mode:</p>
+        </div>
+        <div class="direction-btn-group" role="tablist" aria-label="Conversion Direction">
+          <button type="button" class="direction-btn active" data-dir="c2m" role="tab" aria-selected="true">
+            <span>CSV</span> <span class="arrow-icon">→</span> <span>Markdown</span>
+          </button>
+          <button type="button" class="direction-btn" data-dir="m2c" role="tab" aria-selected="false">
+            <span>Markdown</span> <span class="arrow-icon">→</span> <span>CSV</span>
+          </button>
+        </div>
+        <select id="direction" class="direction-select-sync" aria-label="Conversion direction">
+          <option value="c2m" selected>CSV → Markdown</option>
+          <option value="m2c">Markdown → CSV</option>
+        </select>
       </div>
 
       <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
@@ -59,19 +71,29 @@ const schema = [
     <AdSlot />
 
     <h2>How the conversion works</h2>
+    
+    <h3>Direction 1: Converting CSV to Markdown Table</h3>
     <ol class="steps">
-      <li><strong>Choose your direction:</strong> Select <em>CSV → Markdown</em> to build a markdown table from a spreadsheet, or <em>Markdown → CSV</em> to extract data from a markdown document.</li>
-      <li><strong>Select your file:</strong> Drag and drop your <code>.csv</code>, <code>.tsv</code>, <code>.md</code>, or <code>.txt</code> file. A preview verifies file content immediately.</li>
-      <li><strong>Click Convert:</strong> The Web Worker parses rows, respects pipe characters and delimiters, and outputs the converted file.</li>
-      <li><strong>Download your result:</strong> Save the resulting Markdown or CSV file directly to your computer.</li>
+      <li><strong>Select "CSV → Markdown":</strong> Choose this mode from the direction dropdown above.</li>
+      <li><strong>Add your CSV or TSV file:</strong> Drag and drop your file into the box. A live preview of the top rows appears immediately.</li>
+      <li><strong>Run the conversion:</strong> Click Convert. The tool reads your header row to define column names, adds a GFM separator row (<code>| --- | --- |</code>), wraps each row with pipe delimiters, and safely escapes internal pipes (<code>\|</code>) and line breaks (<code>&lt;br&gt;</code>).</li>
+      <li><strong>Download or copy:</strong> Download your clean <code>.md</code> file or open it to copy the table directly into README files, documentation, or blog posts.</li>
+    </ol>
+
+    <h3>Direction 2: Converting Markdown Table to CSV</h3>
+    <ol class="steps">
+      <li><strong>Select "Markdown → CSV":</strong> Switch the direction dropdown to enable Markdown table extraction.</li>
+      <li><strong>Upload your Markdown file:</strong> Drop your <code>.md</code>, <code>.markdown</code>, or <code>.txt</code> file containing a pipe-delimited table.</li>
+      <li><strong>Extract spreadsheet rows:</strong> Click Convert. The parser scans the file, detects the table boundary, isolates column headers, discards formatting separator rows (e.g. <code>|:---|---:|</code>), unescapes pipe characters, and formats the output into standard comma-separated values.</li>
+      <li><strong>Download your CSV:</strong> Save the resulting <code>.csv</code> file, ready for Excel, Google Sheets, Pandas, or database imports.</li>
     </ol>
 
     <h2>Why convert with our local tool?</h2>
     <ul>
-      <li><strong>Bidirectional:</strong> Seamlessly move from CSV to Markdown and back from Markdown to CSV without extra tools.</li>
-      <li><strong>Escapes Pipe Characters:</strong> Correctly escapes <code>|</code> characters in text cells, keeping your tables aligned.</li>
-      <li><strong>Multi-line Support:</strong> Replaces newline breaks within cells with HTML <code>&lt;br&gt;</code> tags so rows don't shatter.</li>
-      <li><strong>100% Private:</strong> Data processing never leaves your device.</li>
+      <li><strong>True Bidirectional Conversion:</strong> Seamlessly move from CSV to Markdown tables and back from Markdown documents to CSV spreadsheets without needing two separate utilities.</li>
+      <li><strong>GitHub Flavored Markdown (GFM) Standard:</strong> Generated tables comply with GFM specification, rendering seamlessly on GitHub, GitLab, Reddit, Obsidian, Notion, and static site generators.</li>
+      <li><strong>Intelligent Character Escaping:</strong> Safely escapes vertical pipe characters (<code>|</code>) as <code>\|</code> and handles multi-line cells using <code>&lt;br&gt;</code> tags so rows never misalign.</li>
+      <li><strong>Zero Server Uploads:</strong> All parsing and file writing runs entirely inside your browser's Web Worker. Your data is private, fast, and never shared.</li>
     </ul>
 
     <h2>Frequently asked questions</h2>
@@ -101,6 +123,7 @@ const schema = [
       var worker = new Worker('/workers/csv-worker.js');
       var $ = function (id) { return document.getElementById(id); };
       var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+      T.setupDirectionButtons('direction');
 
       dirSel.addEventListener('change', function () {
         var c2m = dirSel.value === 'c2m';

@@ -111,6 +111,29 @@ window.CSVTB = (function () {
     li.appendChild(btn);
     listEl.appendChild(li);
   }
-  return { setupDropzone: setupDropzone, formatBytes: formatBytes, download: download, esc: esc, previewCSV: previewCSV, previewText: previewText, addResult: addResult };
+  function setupDirectionButtons(selectId) {
+    var sel = document.getElementById(selectId);
+    if (!sel) return;
+    var container = sel.closest('.direction-container');
+    if (!container) return;
+    var btns = container.querySelectorAll('.direction-btn');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var val = btn.getAttribute('data-dir');
+        if (sel.value !== val) {
+          sel.value = val;
+          sel.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+    sel.addEventListener('change', function () {
+      btns.forEach(function (btn) {
+        var isMatch = btn.getAttribute('data-dir') === sel.value;
+        btn.classList.toggle('active', isMatch);
+        btn.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+      });
+    });
+  }
+  return { setupDropzone: setupDropzone, formatBytes: formatBytes, download: download, esc: esc, previewCSV: previewCSV, previewText: previewText, addResult: addResult, setupDirectionButtons: setupDirectionButtons };
 })();
 

@@ -4,11 +4,13 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I convert a CSV file to YAML?', a: 'Select "CSV → YAML", choose your CSV file, and click Convert. The converter maps headers to YAML keys for each record, compiling them into a list of YAML objects. Download the output directly.' },
-  { q: 'How do I convert a YAML file to CSV?', a: 'Select "YAML → CSV", upload your YAML document (.yaml or .yml), and click Convert. The tool parses the YAML array of records, unifies keys into columns, and downloads a clean CSV file.' },
-  { q: 'What is the structure of the converted YAML file?', a: 'It produces a standard list of objects (associative arrays represented by indented key-value pairs). Each row starts with a hyphen ("-") to indicate an array item, and contains properties matching the CSV columns.' },
-  { q: 'Are my CSV or YAML files uploaded to any servers?', a: 'No. The converter parses your files locally inside your web browser. No data leaves your machine, ensuring full data privacy.' },
-  { q: 'Can it convert large CSV and YAML configurations?', a: 'Yes. The parser handles large files smoothly in a Web Worker, ensuring your browser remains responsive throughout the process.' }
+  { q: 'How do I convert a CSV file to YAML?', a: 'Select "CSV → YAML" from the direction menu, drop your CSV file, and click Convert. The tool maps your CSV header row to YAML object keys and outputs a clean, indented YAML array of records (.yaml).' },
+  { q: 'How do I convert a YAML file back to CSV?', a: 'Select "YAML → CSV", upload your YAML document (.yaml or .yml), and click Convert. The parser reads the array of items, collects all unique property keys to establish column headers, and exports a standard RFC 4180 CSV spreadsheet.' },
+  { q: 'What YAML structure does the CSV to YAML converter produce?', a: 'It produces a standard list of associative mappings (an array of objects). Each row starts with a hyphen ("- ") representing a record, with indented "key: value" pairs corresponding to the CSV columns.' },
+  { q: 'What YAML format is expected when converting YAML to CSV?', a: 'The parser expects a YAML list/sequence of mappings (e.g. records beginning with "- "). Each entry is treated as a row, with its keys aligned to CSV column headers.' },
+  { q: 'How are special characters like colons, hyphens, and newlines handled in YAML?', a: 'When converting CSV to YAML, values containing colons, dashes, quotes, leading/trailing whitespace, or newlines are automatically quoted and escaped so the generated YAML complies strictly with YAML 1.2 specifications.' },
+  { q: 'Can I use the generated YAML in Kubernetes, Docker Compose, or CI/CD pipelines?', a: 'Yes. The output is standard valid YAML, making it ideal for populating configuration manifests, test fixtures, data seeding, or DevOps orchestration files.' },
+  { q: 'Is my data or configuration file uploaded to any server?', a: 'No. All conversions happen entirely client-side in your web browser via a background Web Worker. Your files and configuration values never leave your computer.' }
 ];
 const schema = [
   { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV ⇄ YAML Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to YAML and YAML to CSV converter. Converts comma-separated values to indented YAML blocks and vice versa locally in browser.' },
@@ -34,13 +36,23 @@ const schema = [
     </p>
 
     <div class="tool">
-      <div class="options">
-        <label class="field">Direction
-          <select id="direction">
-            <option value="c2y">CSV → YAML</option>
-            <option value="y2c">YAML → CSV</option>
-          </select>
-        </label>
+      <div class="direction-container">
+        <div class="direction-info">
+          <span class="direction-badge"><span class="direction-badge-dot"></span> Conversion Direction</span>
+          <p class="direction-label">Select conversion mode:</p>
+        </div>
+        <div class="direction-btn-group" role="tablist" aria-label="Conversion Direction">
+          <button type="button" class="direction-btn active" data-dir="c2y" role="tab" aria-selected="true">
+            <span>CSV</span> <span class="arrow-icon">→</span> <span>YAML</span>
+          </button>
+          <button type="button" class="direction-btn" data-dir="y2c" role="tab" aria-selected="false">
+            <span>YAML</span> <span class="arrow-icon">→</span> <span>CSV</span>
+          </button>
+        </div>
+        <select id="direction" class="direction-select-sync" aria-label="Conversion direction">
+          <option value="c2y" selected>CSV → YAML</option>
+          <option value="y2c">YAML → CSV</option>
+        </select>
       </div>
 
       <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
@@ -59,18 +71,29 @@ const schema = [
     <AdSlot />
 
     <h2>How the conversion works</h2>
+    
+    <h3>Direction 1: Converting CSV to YAML</h3>
     <ol class="steps">
-      <li><strong>Choose direction:</strong> Select <em>CSV → YAML</em> to convert spreadsheet records to YAML, or <em>YAML → CSV</em> to extract structured YAML files back to CSV.</li>
-      <li><strong>Add your file:</strong> Drag a <code>.csv</code>, <code>.tsv</code>, <code>.yaml</code>, or <code>.yml</code> file into the dropzone. Verify the preview.</li>
-      <li><strong>Start conversion:</strong> Click Convert to parse records in a background Web Worker.</li>
-      <li><strong>Download your document:</strong> Click download to save your new <code>.yaml</code> or <code>.csv</code> file directly.</li>
+      <li><strong>Select "CSV → YAML":</strong> Choose this mode from the direction dropdown above.</li>
+      <li><strong>Add your CSV file:</strong> Drag and drop your <code>.csv</code> or <code>.tsv</code> file. The preview table confirms headers and initial rows.</li>
+      <li><strong>Convert to structured YAML:</strong> Click Convert. The tool parses headers as object property keys, formats each record into a YAML list item (starting with <code>- </code>), properly quotes strings with colons or special symbols, and outputs standard YAML.</li>
+      <li><strong>Download your YAML:</strong> Save the output as a <code>.yaml</code> or <code>.yml</code> file, ready for configuration management or API seeding.</li>
+    </ol>
+
+    <h3>Direction 2: Converting YAML to CSV</h3>
+    <ol class="steps">
+      <li><strong>Select "YAML → CSV":</strong> Switch the direction dropdown to enable YAML-to-CSV conversion.</li>
+      <li><strong>Upload your YAML document:</strong> Drop your <code>.yaml</code>, <code>.yml</code>, or <code>.txt</code> file containing a list of records.</li>
+      <li><strong>Extract tabular columns:</strong> Click Convert. The worker uses JS-YAML to load the data structure, aggregates all unique keys across records to create a unified header row, and unparses values into comma-separated rows.</li>
+      <li><strong>Download your CSV:</strong> Save the converted file as a clean <code>.csv</code> spreadsheet for Excel, Google Sheets, or data pipelines.</li>
     </ol>
 
     <h2>Why choose our browser-based YAML converter?</h2>
     <ul>
-      <li><strong>Bidirectional Conversion:</strong> Move freely back and forth between CSV spreadsheets and YAML configuration files.</li>
-      <li><strong>Proper Quote Escapes:</strong> Handles cells with colons, hyphens, and newlines by quoting values correctly so the YAML parses cleanly in Kubernetes, docker-compose, or CI/CD pipelines.</li>
-      <li><strong>Nested Structure Handling:</strong> Flattens or serializes nested YAML properties cleanly so tabular structures remain readable.</li>
+      <li><strong>Full Two-Way Conversion:</strong> Effortlessly switch back and forth between tabular CSV spreadsheets and structured YAML configuration documents.</li>
+      <li><strong>Robust Quote &amp; Syntax Escaping:</strong> Strings containing colons, curly braces, hyphens, or newlines are quoted accurately according to YAML 1.2 rules.</li>
+      <li><strong>DevOps &amp; Config Ready:</strong> Perfect for transforming spreadsheets into Kubernetes config maps, Helm values, Docker Compose files, or database seeds.</li>
+      <li><strong>100% Client-Side Privacy:</strong> No files or values are sent to external servers. Your configuration credentials, records, and tables stay private.</li>
     </ul>
 
     <h2>Frequently asked questions</h2>
@@ -100,6 +123,7 @@ const schema = [
       var worker = new Worker('/workers/csv-worker.js');
       var $ = function (id) { return document.getElementById(id); };
       var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+      T.setupDirectionButtons('direction');
 
       dirSel.addEventListener('change', function () {
         var c2y = dirSel.value === 'c2y';
