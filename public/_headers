@@ -1,0 +1,24 @@
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-XSS-Protection: 1; mode=block
+  Permissions-Policy: geolocation=(), camera=(), microphone=()
+
+/favicon.svg
+  Cache-Control: public, max-age=31536000, immutable
+/favicon.ico
+  Cache-Control: public, max-age=31536000, immutable
+/favicon-16x16.png
+  Cache-Control: public, max-age=31536000, immutable
+/favicon-32x32.png
+  Cache-Control: public, max-age=31536000, immutable
+/apple-touch-icon.png
+  Cache-Control: public, max-age=31536000, immutable
+/site.webmanifest
+  Cache-Control: public, max-age=86400
+
+/workers/*
+  Cache-Control: public, max-age=86400
+/js/*
+  Cache-Control: public, max-age=86400

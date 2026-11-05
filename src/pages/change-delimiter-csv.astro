@@ -1,0 +1,145 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I change the delimiter of a CSV file?', a: 'Upload your file into the tool above, choose the target separator you want to convert to (e.g. Semicolon, Tab, Pipe or Comma) and click Change Delimiter. The converted CSV downloads instantly. Everything runs on your device, so your data remains private.' },
+  { q: 'Can this tool convert comma-separated files to semicolon-separated?', a: 'Yes. It automatically detects if your original file is comma-separated and parses it, then exports it with semicolons if you select the Semicolon option.' },
+  { q: 'What delimiters are supported?', a: 'We support conversion to standard commas (,), semicolons (;), tabs (\\t, which turns it into a TSV file), and pipes (|).' },
+  { q: 'Is there a limit on CSV file size?', a: 'There is no fixed limit. The file is processed locally using background stream workers, so files of several hundred megabytes convert quickly without freezing your browser.' },
+  { q: 'Is my data secure?', a: 'Yes, 100%. All processing occurs locally in your web browser. Your file is never uploaded to a server, making it safe for confidential or private business data.' }
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Delimiter Changer', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to change CSV delimiters. Convert CSV separators from comma to semicolon, tab, pipe or custom separator locally in browser.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'Change Delimiter', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Change CSV Delimiter Online Free — Convert Separators (No Signup)"
+  description="Free online CSV delimiter changer. Convert CSV separators from comma to semicolon, tab, or pipe, with headers kept. No signup, no upload: runs privately in browser."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Change CSV Delimiter Online</h1>
+    <p class="lead">
+      <strong>How do you convert commas to semicolons or change CSV separators?</strong> Drop your CSV file below, 
+      select your target separator (like comma, semicolon, tab, or pipe), and click "Change Delimiter". 
+      Whether you need to convert semicolons to commas, change comma to tab, or convert tab-separated files to standard CSV, 
+      our tool automatically detects the original separator, parses it locally, and downloads your converted file instantly.
+    </p>
+
+    <div class="tool">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a CSV file or drag and drop it here">
+        <p><strong>Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv,.tsv,.txt" />
+      <p class="status" id="file-name" hidden></p>
+      <div class="preview-wrap" id="preview" hidden></div>
+      
+      <div class="options">
+        <label class="field">Target Delimiter
+          <select id="target-delimiter">
+            <option value=",">Comma ( , )</option>
+            <option value=";">Semicolon ( ; )</option>
+            <option value="\t">Tab ( \t )</option>
+            <option value="|">Pipe ( | )</option>
+          </select>
+        </label>
+      </div>
+      
+      <button class="btn" id="run" disabled>Change Delimiter</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot />
+
+    <h2>How to convert CSV separators (step by step)</h2>
+    <ol class="steps">
+      <li><strong>Add your file.</strong> Drag and drop the CSV into the box above, or click it to browse. A preview of the first rows appears instantly.</li>
+      <li><strong>Pick a target delimiter.</strong> Select the output separator you want to convert the file to: comma, semicolon, tab, or pipe.</li>
+      <li><strong>Click "Change Delimiter".</strong> The file will be processed inside a background worker.</li>
+      <li><strong>Download the converted file.</strong> Save the new file directly to your device.</li>
+    </ol>
+
+    <h2>Why use this CSV Delimiter Changer?</h2>
+    <ul>
+      <li><strong>Private by design:</strong> your files never leave your computer, keeping all conversions completely secure.</li>
+      <li><strong>No limits, no signup:</strong> convert commas to semicolons, commas to tabs, or pipes to commas as many times as you need.</li>
+      <li><strong>Visual validation:</strong> preview the table structure before exporting to verify your delimiters.</li>
+      <li><strong>Versatile separator converter:</strong> change commas to semicolons ( ; ), semicolons to commas ( , ), commas to tabs ( \t ), or change delimiters to pipes ( | ).</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/merge-csv/">Merge CSV files</a> ·
+      <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/csv-to-json/">Convert CSV to JSON</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var runBtn = $('run'), status = $('status'), resultsEl = $('results'), targetDelSel = $('target-delimiter');
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        runBtn.disabled = false;
+        T.previewCSV(file, $('preview'), 6);
+      });
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'progress') {
+          status.textContent = 'Converting… ' + d.rows.toLocaleString() + ' rows read';
+        } else if (d.type === 'file') {
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          status.textContent = 'Done — successfully changed delimiter for ' + d.rows.toLocaleString() + ' rows.';
+          runBtn.disabled = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      runBtn.addEventListener('click', function () {
+        if (!file) return;
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+        status.textContent = 'Converting…';
+        worker.postMessage({ 
+          op: 'change-delimiter', 
+          file: file, 
+          options: { 
+            targetDelimiter: targetDelSel.value 
+          } 
+        });
+      });
+    });
+  </script>
+</Base>

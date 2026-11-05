@@ -1,0 +1,201 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I open and view a large CSV file online?', a: 'Drag and drop your file into the box above. The tool immediately reads the file using background stream workers, generating a paginated grid. You can scroll, search, and navigate through pages instantly.' },
+  { q: 'Can I view a 100MB or large CSV file without Excel?', a: 'Yes. Excel has a strict limit of 1,048,576 rows and often freezes on large files. Our viewer paginates the data in a background thread, allowing you to easily view files of hundreds of megabytes on a standard laptop.' },
+  { q: 'Is there a search feature to filter rows?', a: 'Yes. You can use the search bar above the grid to filter and find specific rows instantly. The search is processed in the background worker to keep the interface responsive.' },
+  { q: 'Is my CSV data uploaded to any server?', a: 'No. All parsing, pagination, and searching are performed locally in your web browser. Your data never leaves your device, making it safe and secure.' },
+  { q: 'Can I export the filtered rows?', a: 'Currently, the viewer is read-only. However, you can use our CSV Splitter or CSV Column Extractor tools to divide or filter columns from your large files before exporting.' }
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'Large CSV Viewer', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to open and view large CSV files. View, paginate, and search large spreadsheets locally in the browser with no upload required.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'Large CSV Viewer', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Large CSV Viewer Online Free — Open Large CSV Files (No Signup)"
+  description="Free online large CSV viewer. Open, view and search large CSV files (100MB+) in your browser without Excel. No signup, no file upload: runs privately and fast."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Large CSV Viewer Online</h1>
+    <p class="lead">
+      <strong>How do you open and view a large CSV file without Excel?</strong> Drop your CSV file below to instantly 
+      load it in a fast, paginated grid. The tool processes files locally using streaming background workers, 
+      allowing you to search, filter, and view large datasets privately without uploading data to any server. 
+      Perfect to open large CSV online free, search large CSV online, and inspect large CSV files.
+    </p>
+
+    <div class="tool">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a CSV file or drag and drop it here">
+        <p><strong>Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv,.tsv,.txt" />
+      <p class="status" id="file-name" hidden></p>
+      
+      <div class="viewer-section" id="viewer-container" style="margin: 1.5rem 0;" hidden>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label class="field" style="flex-direction: row; align-items: center; gap: 0.5rem;">
+              <span>Search rows:</span>
+              <input type="text" id="search-input" name="search" placeholder="Type to filter…" autocomplete="off" style="min-width: 200px;" />
+            </label>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem; font-weight: 500; font-size: 0.95rem;">
+            <button type="button" class="btn btn-small" id="prev-page" disabled>Previous</button>
+            <span id="page-indicator">Page 1 of 1</span>
+            <button type="button" class="btn btn-small" id="next-page" disabled>Next</button>
+          </div>
+        </div>
+        
+        <p class="muted" style="margin-bottom: 0.75rem;">
+          Showing <span id="rows-shown">0</span> of <span id="rows-total">0</span> total rows 
+          <span id="filter-indicator" hidden>(filtered from <span id="rows-unfiltered">0</span> rows)</span>
+        </p>
+        
+        <div class="preview-wrap" id="grid-wrap" style="border: 1px solid var(--border); border-radius: 8px; max-height: 500px; overflow: auto; background: #fff;">
+          <table id="grid-table" style="border-collapse: collapse; width: 100%; font-size: 0.85rem;"></table>
+        </div>
+      </div>
+      
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </div>
+
+    <AdSlot />
+
+    <h2>How to view CSV file without Excel (step by step)</h2>
+    <ol class="steps">
+      <li><strong>Add your file.</strong> Drag and drop the CSV into the box above, or click it to browse. The file parses instantly in the background.</li>
+      <li><strong>Use the grid.</strong> Scroll through the data page-by-page. We load 100 rows at a time to prevent any screen lag.</li>
+      <li><strong>Search the data.</strong> Type terms into the search box to filter matching rows across all columns.</li>
+      <li><strong>Adjust views.</strong> Semicolons, commas, and other separators are auto-detected for column alignment.</li>
+    </ol>
+
+    <h2>Why use this Large CSV Viewer?</h2>
+    <ul>
+      <li><strong>Fast loading times:</strong> view large CSV files in browser memory without waiting for server downloads.</li>
+      <li><strong>No data uploads:</strong> runs privately in browser memory, making it safe for corporate sheets.</li>
+      <li><strong>No Excel limitations:</strong> bypasses Excel's sheet truncation blocks on large rows.</li>
+      <li><strong>Powerful filters:</strong> scan, filter, and read specific indices in real time.</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/merge-csv/">Merge CSV files</a> ·
+      <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/change-delimiter-csv/">Change CSV delimiter</a> ·
+      <a href="/extract-columns-csv/">Extract CSV columns</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var container = $('viewer-container'), searchInput = $('search-input');
+      var prevBtn = $('prev-page'), nextBtn = $('next-page'), pageIndicator = $('page-indicator');
+      var rowsShown = $('rows-shown'), rowsTotal = $('rows-total'), rowsUnfiltered = $('rows-unfiltered'), filterIndicator = $('filter-indicator');
+      var table = $('grid-table'), status = $('status');
+      
+      var currentPage = 1, totalPages = 1, pageSize = 100;
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        container.hidden = true;
+        status.textContent = 'Loading and indexing file…';
+        currentPage = 1;
+        fetchPage();
+      });
+
+      function fetchPage() {
+        if (!file) return;
+        worker.postMessage({
+          op: 'csv-view',
+          file: file,
+          options: {
+            page: currentPage,
+            pageSize: pageSize,
+            query: searchInput.value
+          }
+        });
+      }
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'view-data') {
+          container.hidden = false;
+          status.textContent = '';
+          totalPages = d.totalPages || 1;
+          pageIndicator.textContent = 'Page ' + d.page + ' of ' + totalPages;
+          prevBtn.disabled = d.page <= 1;
+          nextBtn.disabled = d.page >= totalPages;
+
+          rowsShown.textContent = d.rows.length;
+          rowsTotal.textContent = d.matchedRows;
+          if (searchInput.value.trim()) {
+            rowsUnfiltered.textContent = d.totalRows;
+            filterIndicator.hidden = false;
+          } else {
+            filterIndicator.hidden = true;
+          }
+
+          var html = '<thead><tr>' + d.headers.map(function(h) { return '<th>' + T.esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>';
+          d.rows.forEach(function (r) {
+            html += '<tr>' + r.map(function(cell) { return '<td>' + T.esc(cell) + '</td>'; }).join('') + '</tr>';
+          });
+          html += '</tbody>';
+          table.innerHTML = html;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+        }
+      };
+
+      prevBtn.addEventListener('click', function () {
+        if (currentPage > 1) {
+          currentPage--;
+          fetchPage();
+        }
+      });
+
+      nextBtn.addEventListener('click', function () {
+        if (currentPage < totalPages) {
+          currentPage++;
+          fetchPage();
+        }
+      });
+
+      var debounceTimer;
+      searchInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+          currentPage = 1;
+          fetchPage();
+        }, 300);
+      });
+    });
+  </script>
+</Base>

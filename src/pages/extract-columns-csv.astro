@@ -1,0 +1,163 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I extract columns from a CSV file?', a: 'Upload your file into the tool above, check the boxes for the specific columns you want to keep, and click Extract Columns. The tool generates a new CSV containing only the selected columns and downloads it instantly. Everything runs locally on your device.' },
+  { q: 'Can I remove columns from a large CSV file?', a: 'Yes. By deselecting the columns you do not want and keeping the ones you need, you can delete columns from large CSV files easily. This is perfect for trimming bloated files exported from Salesforce or HubSpot.' },
+  { q: 'Is there a limit on the file size or number of columns?', a: 'No fixed limit. The file is parsed as a stream in the background, so you can process large CSV files with hundreds of columns without crashing your browser tab, within your device\'s memory limits.' },
+  { q: 'Are my column selections uploaded to any server?', a: 'No. The column extraction happens 100% inside your browser. Your data never leaves your device, making it safe for corporate data security.' },
+  { q: 'Does the output file keep the original header names?', a: 'Yes. The extracted columns retain their original header names and ordering, ensuring database imports and spreadsheets open cleanly.' }
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Column Extractor', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to extract specific columns or remove columns from CSV files. Runs locally in the browser with no upload required.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'Extract CSV Columns', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Extract Columns from CSV Online Free — Filter CSV Columns (No Signup)"
+  description="Free online CSV column extractor. Extract or remove specific columns from large CSV files in your browser. No signup, no file upload: runs privately and fast."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Extract Columns from CSV Online</h1>
+    <p class="lead">
+      <strong>How do you extract columns from a CSV file without Excel?</strong> Drop your file below, choose the specific 
+      columns you want to keep, and click "Extract Columns". This free CSV column selector and remover tool automatically 
+      detects your headers, acts as a CSV column filter, and lets you hide or delete CSV columns online. 
+      It is the fastest way to split columns out of a CSV, keep specific CSV columns, or delete columns from large CSV files privately.
+    </p>
+
+    <div class="tool">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a CSV file or drag and drop it here">
+        <p><strong>Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv,.tsv,.txt" />
+      <p class="status" id="file-name" hidden></p>
+      <div class="preview-wrap" id="preview" hidden></div>
+      
+      <div class="options-wrap" id="options-section" style="margin: 1.5rem 0;" hidden>
+        <h3 style="margin-bottom: 0.75rem;">Select Columns to Keep (CSV Column Filter)</h3>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <button type="button" class="btn btn-small" id="select-all" style="background-color: var(--brand-dark);">Select All</button>
+          <button type="button" class="btn btn-small" id="deselect-all" style="background-color: var(--muted);">Deselect All</button>
+        </div>
+        <div class="columns-grid" id="columns-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; margin-top: 1rem; max-height: 250px; overflow-y: auto; border: 1px solid var(--border); padding: 1rem; border-radius: 8px; background: #fff;"></div>
+      </div>
+      
+      <button class="btn" id="run" disabled>Extract Columns</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot />
+
+    <h2>How to extract columns from CSV free (step by step)</h2>
+    <ol class="steps">
+      <li><strong>Add your file.</strong> Drag and drop the CSV into the box above, or click it to browse. The headers will be parsed immediately.</li>
+      <li><strong>Select columns to keep.</strong> Use the checkboxes to select which columns to keep, or use "Deselect All" and choose manually.</li>
+      <li><strong>Click "Extract Columns".</strong> The tool will filter the data rows in a background stream.</li>
+      <li><strong>Download the cleaned CSV.</strong> Save the resulting file containing only your chosen columns.</li>
+    </ol>
+
+    <h2>Why use this CSV Column Filter?</h2>
+    <ul>
+      <li><strong>Private by design:</strong> your files never leave your device. Filter and cut CSV columns safely.</li>
+      <li><strong>No limits, no signup:</strong> extract columns from CSV free, delete CSV columns online, or choose specific columns in CSV files as many times as you need.</li>
+      <li><strong>Supports large files:</strong> streams data in background workers, allowing you to delete columns from large CSV files without crashing your browser.</li>
+      <li><strong>Layman friendly:</strong> works as a simple CSV column remover or selector to separate columns into a new file without code.</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/merge-csv/">Merge CSV files</a> ·
+      <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/change-delimiter-csv/">Change CSV delimiter</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var runBtn = $('run'), status = $('status'), resultsEl = $('results');
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        T.previewCSV(file, $('preview'), 6);
+        worker.postMessage({ op: 'headers', file: file });
+      });
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'headers') {
+          var container = $('columns-container');
+          container.innerHTML = d.headers.map(function (h) {
+            return '<label class="checkbox"><input type="checkbox" name="columns" value="' + T.esc(h) + '" checked autocomplete="off" /> ' + T.esc(h) + '</label>';
+          }).join('');
+          $('options-section').hidden = false;
+          runBtn.disabled = false;
+        } else if (d.type === 'progress') {
+          status.textContent = 'Extracting… ' + d.rows.toLocaleString() + ' rows read';
+        } else if (d.type === 'file') {
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          status.textContent = 'Done — successfully extracted columns for ' + d.rows.toLocaleString() + ' rows.';
+          runBtn.disabled = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      $('select-all').addEventListener('click', function () {
+        document.querySelectorAll('input[name="columns"]').forEach(function (cb) { cb.checked = true; });
+      });
+      $('deselect-all').addEventListener('click', function () {
+        document.querySelectorAll('input[name="columns"]').forEach(function (cb) { cb.checked = false; });
+      });
+
+      runBtn.addEventListener('click', function () {
+        if (!file) return;
+        var checked = Array.prototype.slice.call(document.querySelectorAll('input[name="columns"]:checked')).map(function (cb) { return cb.value; });
+        if (!checked.length) {
+          alert('Please select at least one column to keep.');
+          return;
+        }
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+        status.textContent = 'Extracting…';
+        worker.postMessage({
+          op: 'extract-columns',
+          file: file,
+          options: {
+            columns: checked,
+            keepHeader: true
+          }
+        });
+      });
+    });
+  </script>
+</Base>

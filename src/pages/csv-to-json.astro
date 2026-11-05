@@ -1,0 +1,132 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I convert a CSV file to JSON?', a: 'Drop your CSV into the tool above and click Convert. You get a pretty-printed JSON array of objects, where each row becomes an object keyed by the column headers. The conversion runs locally in your browser.' },
+  { q: 'Can I convert JSON back to CSV?', a: 'Yes. Switch the direction to "JSON to CSV" and drop a JSON file containing an array of objects. Keys become column headers and each object becomes a row.' },
+  { q: 'What JSON format does the converter output?', a: 'A pretty-printed array of objects, the format expected by most APIs, databases and JavaScript applications. Column headers become object keys.' },
+  { q: 'Does the converter work with large files?', a: 'Yes. Parsing runs in a background worker, so large files convert without freezing the page. Very large outputs are limited mainly by your device memory.' },
+  { q: 'Is my data uploaded anywhere?', a: 'No. The conversion happens entirely in your browser. Files never leave your device.' },
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV to JSON Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online converter between CSV and JSON. Converts CSV rows to a JSON array of objects and back. Runs locally in the browser.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'CSV to JSON Converter', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Convert CSV to JSON Online Free (and JSON to CSV) — No Signup"
+  description="Free online CSV to JSON converter, plus JSON to CSV. Each row becomes a JSON object keyed by headers. No signup, no upload: conversion runs privately in your browser."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Convert CSV to JSON Online</h1>
+    <p class="lead">
+      <strong>How do you convert CSV to JSON?</strong> Drop your CSV below and click Convert. Each
+      row becomes a JSON object with the column headers as keys. You can also convert JSON back to
+      CSV. Free, no signup, and your data never leaves your device.
+    </p>
+
+    <div class="tool">
+      <div class="options">
+        <label class="field">Direction
+          <select id="direction">
+            <option value="c2j">CSV → JSON</option>
+            <option value="j2c">JSON → CSV</option>
+          </select>
+        </label>
+      </div>
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
+        <p><strong id="dz-label">Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv" />
+      <p class="status" id="file-name" hidden></p>
+      <button class="btn" id="run" disabled>Convert</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot />
+
+    <h2>How the conversion works</h2>
+    <ol class="steps">
+      <li><strong>Choose a direction.</strong> CSV → JSON or JSON → CSV.</li>
+      <li><strong>Add your file.</strong> For CSV → JSON the first row is used as headers. For JSON → CSV the file must contain an array of objects.</li>
+      <li><strong>Click Convert</strong> and download the result. CSV → JSON produces a pretty-printed array of objects; JSON → CSV produces a standard comma-separated file with a header row.</li>
+    </ol>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/merge-csv/">Merge CSV files</a> ·
+      <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/guides/">All guides</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+
+      dirSel.addEventListener('change', function () {
+        var c2j = dirSel.value === 'c2j';
+        $('dz-label').textContent = c2j ? 'Drop your CSV file here' : 'Drop your JSON file here';
+        $('file-input').accept = c2j ? '.csv,text/csv' : '.json,application/json';
+        file = null;
+        $('file-name').hidden = true;
+        runBtn.disabled = true;
+      });
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        runBtn.disabled = false;
+      });
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'progress') {
+          status.textContent = 'Converting… ' + d.rows.toLocaleString() + ' rows';
+        } else if (d.type === 'file') {
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          status.textContent = 'Done — ' + d.rows.toLocaleString() + ' records converted.';
+          runBtn.disabled = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      runBtn.addEventListener('click', function () {
+        if (!file) return;
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+        status.textContent = 'Converting…';
+        worker.postMessage({ op: dirSel.value === 'c2j' ? 'csv-to-json' : 'json-to-csv', file: file });
+      });
+    });
+  </script>
+</Base>

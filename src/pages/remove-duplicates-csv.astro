@@ -1,0 +1,141 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I remove duplicate rows from a CSV file?', a: 'Drop your CSV into the tool above and click "Remove duplicates". The first occurrence of each row is kept, repeats are removed, and a cleaned file downloads instantly. It all runs locally in your browser.' },
+  { q: 'Can I deduplicate based on specific columns only?', a: 'Yes. After loading a file, tick the columns that should define a duplicate (for example just the Email column). Rows matching on those columns are treated as duplicates even if other columns differ.' },
+  { q: 'Which duplicate row is kept?', a: 'The first occurrence in file order is kept; later repeats are removed. The original row order is preserved in the output.' },
+  { q: 'How many duplicates were removed?', a: 'After processing, the tool reports exactly how many duplicate rows were removed and how many unique rows were kept.' },
+  { q: 'Is my data safe?', a: 'Yes. Deduplication happens entirely on your device. The file is never uploaded, so it is safe for customer lists and other sensitive data.' },
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Duplicate Remover', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to remove duplicate rows from CSV files, across all columns or selected columns only. Runs locally in the browser.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'CSV Duplicate Remover', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Remove Duplicate Rows From CSV Online Free — No Signup"
+  description="Free online tool to remove duplicate rows from CSV files. Deduplicate by all columns or selected columns only. No signup, no upload: runs privately in your browser."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Remove Duplicates From CSV Online</h1>
+    <p class="lead">
+      <strong>How do you remove duplicate rows from a CSV?</strong> Drop your file below and click
+      "Remove duplicates". Optionally pick which columns define a duplicate (e.g. just Email). The
+      cleaned file downloads instantly, with a count of removed rows. Free and fully private.
+    </p>
+
+    <div class="tool">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a CSV file or drag and drop it here">
+        <p><strong>Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv" />
+      <p class="status" id="file-name" hidden></p>
+      <div class="preview-wrap" id="preview" hidden></div>
+      <div class="options" id="columns-wrap" hidden>
+        <fieldset style="border:0;padding:0;margin:0">
+          <legend class="field" style="padding:0">Match duplicates on these columns (none selected = entire row)</legend>
+          <div id="columns" style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:0.5rem"></div>
+        </fieldset>
+      </div>
+      <label class="checkbox"><input type="checkbox" id="has-header" name="hasHeader" checked autocomplete="off" /> First row is a header</label>
+      <p></p>
+      <button class="btn" id="run" disabled>Remove duplicates</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot />
+
+    <h2>How to remove duplicate rows (step by step)</h2>
+    <ol class="steps">
+      <li><strong>Add your file.</strong> Drag and drop the CSV or click the box to browse.</li>
+      <li><strong>Choose match columns (optional).</strong> By default the entire row must match to count as a duplicate. Tick specific columns, like Email or ID, to dedupe on those alone.</li>
+      <li><strong>Click "Remove duplicates".</strong> The first occurrence of each row is kept, in the original order.</li>
+      <li><strong>Download the cleaned file</strong> and see exactly how many duplicates were removed.</li>
+    </ol>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/merge-csv/">Merge CSV files</a> ·
+      <a href="/csv-to-json/">Convert CSV to JSON</a> ·
+      <a href="/guides/">All guides</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var runBtn = $('run'), status = $('status'), resultsEl = $('results'), colsEl = $('columns');
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        runBtn.disabled = false;
+        T.previewCSV(file, $('preview'), 6);
+        worker.postMessage({ op: 'headers', file: file });
+      });
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'headers') {
+          colsEl.innerHTML = '';
+          d.headers.forEach(function (h) {
+            var label = document.createElement('label');
+            label.className = 'checkbox';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = h;
+            label.appendChild(cb);
+            label.appendChild(document.createTextNode(' ' + h));
+            colsEl.appendChild(label);
+          });
+          $('columns-wrap').hidden = d.headers.length === 0;
+        } else if (d.type === 'progress') {
+          status.textContent = 'Processing… ' + d.rows.toLocaleString() + ' rows scanned';
+        } else if (d.type === 'file') {
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          status.textContent = 'Done — removed ' + d.removed.toLocaleString() + ' duplicate rows, kept ' + d.kept.toLocaleString() + ' unique rows.';
+          runBtn.disabled = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      runBtn.addEventListener('click', function () {
+        if (!file) return;
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+        status.textContent = 'Processing…';
+        var columns = Array.prototype.slice.call(colsEl.querySelectorAll('input:checked')).map(function (c) { return c.value; });
+        worker.postMessage({ op: 'dedupe', file: file, options: { columns: columns, hasHeader: $('has-header').checked } });
+      });
+    });
+  </script>
+</Base>

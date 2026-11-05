@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="404 — Page Not Found — CSV Toolbox"
+  description="The CSV Toolbox page or utility you requested could not be found."
+  noindex={true}
+>
+  <div class="container guide" style="text-align: center; padding: 4rem 1.5rem;">
+    <h1>404 — Page Not Found</h1>
+    <p class="lead">The CSV tool or guide you requested does not exist or may have moved.</p>
+    <div style="margin: 2rem 0; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a class="btn" href="/">Return to Home</a>
+      <a class="btn" href="/split-csv/" style="background: var(--brand-dark);">CSV Splitter</a>
+      <a class="btn" href="/merge-csv/" style="background: var(--brand-dark);">CSV Merger</a>
+      <a class="btn" href="/guides/" style="background: var(--muted);">Guides</a>
+    </div>
+  </div>
+</Base>

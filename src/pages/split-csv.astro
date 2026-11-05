@@ -1,0 +1,175 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I split a large CSV file?', a: 'Drop your file into the tool above, choose how to split it (by rows, file size or column value) and click Split. Each part downloads as a separate CSV, or grab them all in one ZIP. Everything runs in your browser, so files process locally without network latency.' },
+  { q: 'Does each split file keep the header row?', a: 'Yes. Leave "First row is a header" checked and every output file starts with the original header row, so each part opens cleanly in Excel or imports into any database.' },
+  { q: 'Can I split a CSV by the values in a column?', a: 'Yes. Choose "By column value" mode and pick a column. The tool creates one file per unique value, for example one file per country, region or category.' },
+  { q: 'What is the maximum file size?', a: 'Files are processed as a stream in a background Web Worker, so files of several hundred megabytes work on a normal laptop without freezing the page. The practical limit is governed by your device memory.' },
+  { q: 'Is my data uploaded anywhere?', a: 'No. The splitter runs 100% in your browser. Your file never leaves your device, which makes it safe for confidential data.' },
+  { q: 'How do I split a CSV so Excel can open it?', a: 'Excel supports at most 1,048,576 rows per sheet. Split by rows with a value of 1,000,000 or less and every part will open in Excel without truncation.' },
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Splitter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to split CSV files by rows, file size or column value. Runs locally in the browser, no signup or upload required.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'CSV Splitter', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Split CSV Files Online Free — By Rows, Size or Column (No Signup)"
+  description="Free online CSV splitter. Split large CSV files by number of rows, file size or column value, with headers kept in every part. No signup, no upload: runs privately in your browser."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Split CSV Files Online</h1>
+    <p class="lead">
+      <strong>How do you split a CSV file?</strong> Drop your file below, choose to split by rows,
+      file size or column value, and click Split. Each part keeps the header row and downloads
+      instantly. Free, no signup, and your file never leaves your device.
+    </p>
+
+    <div class="tool">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a CSV file or drag and drop it here">
+        <p><strong>Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv" />
+      <p class="status" id="file-name" hidden></p>
+      <div class="preview-wrap" id="preview" hidden></div>
+      <div class="options">
+        <label class="field">Split mode
+          <select id="mode">
+            <option value="rows">By number of rows</option>
+            <option value="size">By max file size</option>
+            <option value="column">By column value</option>
+          </select>
+        </label>
+        <label class="field" id="opt-rows">Rows per file
+          <input type="number" id="rows-per" name="rowsPer" value="1000" min="1" autocomplete="off" />
+        </label>
+        <label class="field" id="opt-size" hidden>Max size (MB)
+          <input type="number" id="max-mb" name="maxMb" value="5" min="0.1" step="0.1" autocomplete="off" />
+        </label>
+        <label class="field" id="opt-column" hidden>Column
+          <select id="column" name="column"></select>
+        </label>
+        <label class="checkbox"><input type="checkbox" id="keep-header" name="keepHeader" checked autocomplete="off" /> First row is a header (keep it in every part)</label>
+      </div>
+      <button class="btn" id="run" disabled>Split CSV</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+      <button class="btn" id="zip" hidden>Download all as ZIP</button>
+    </div>
+
+    <AdSlot />
+
+    <h2>How to split a CSV file (step by step)</h2>
+    <ol class="steps">
+      <li><strong>Add your file.</strong> Drag and drop the CSV into the box above, or click it to browse. A preview of the first rows appears instantly.</li>
+      <li><strong>Pick a split mode.</strong> By rows (e.g. 1,000 rows per file), by file size (e.g. 5 MB parts) or by column value (one file per unique value in a column).</li>
+      <li><strong>Click "Split CSV".</strong> A live counter shows rows processed. Large files stay responsive thanks to streaming in a background worker.</li>
+      <li><strong>Download the parts.</strong> Save files individually or click "Download all as ZIP".</li>
+    </ol>
+
+    <h2>Why use this CSV splitter?</h2>
+    <ul>
+      <li><strong>Private by design:</strong> files are processed on your device, never uploaded to a server.</li>
+      <li><strong>No limits, no signup:</strong> split files of any size supported by your device, completely free.</li>
+      <li><strong>Headers preserved:</strong> every part is a valid, self-contained CSV.</li>
+      <li><strong>Three split modes:</strong> by rows, by file size, or by unique column values.</li>
+      <li><strong>Fast local processing:</strong> streaming processing handles files up to hundreds of megabytes without freezing your browser.</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/merge-csv/">Merge CSV files</a> ·
+      <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/csv-to-json/">Convert CSV to JSON</a> ·
+      <a href="/guides/">All guides</a>
+    </aside>
+  </div>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null, results = [];
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var modeSel = $('mode'), runBtn = $('run'), status = $('status'), resultsEl = $('results'), zipBtn = $('zip');
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        runBtn.disabled = false;
+        T.previewCSV(file, $('preview'), 6);
+        worker.postMessage({ op: 'headers', file: file });
+      });
+
+      modeSel.addEventListener('change', function () {
+        $('opt-rows').hidden = modeSel.value !== 'rows';
+        $('opt-size').hidden = modeSel.value !== 'size';
+        $('opt-column').hidden = modeSel.value !== 'column';
+      });
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'headers') {
+          $('column').innerHTML = d.headers.map(function (h) { return '<option>' + T.esc(h) + '</option>'; }).join('');
+        } else if (d.type === 'progress') {
+          status.textContent = 'Processing… ' + d.rows.toLocaleString() + ' rows read';
+        } else if (d.type === 'file') {
+          results.push(d);
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          status.textContent = 'Done — ' + d.rows.toLocaleString() + ' rows split into ' + d.parts + ' file' + (d.parts === 1 ? '' : 's') + '.';
+          runBtn.disabled = false;
+          if (results.length > 1) zipBtn.hidden = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      runBtn.addEventListener('click', function () {
+        if (!file) return;
+        results = [];
+        resultsEl.innerHTML = '';
+        zipBtn.hidden = true;
+        runBtn.disabled = true;
+        status.textContent = 'Processing…';
+        var keep = $('keep-header').checked;
+        if (modeSel.value === 'rows') {
+          worker.postMessage({ op: 'split-rows', file: file, options: { rowsPerFile: Math.max(1, parseInt($('rows-per').value, 10) || 1000), hasHeader: keep, keepHeader: keep } });
+        } else if (modeSel.value === 'size') {
+          worker.postMessage({ op: 'split-size', file: file, options: { maxBytes: Math.max(0.1, parseFloat($('max-mb').value) || 5) * 1024 * 1024, hasHeader: keep, keepHeader: keep } });
+        } else {
+          worker.postMessage({ op: 'split-column', file: file, options: { column: $('column').value, keepHeader: keep } });
+        }
+      });
+
+      zipBtn.addEventListener('click', function () {
+        var zip = new JSZip();
+        results.forEach(function (r) { zip.file(r.name, r.content); });
+        zip.generateAsync({ type: 'blob' }).then(function (blob) { T.download('split-files.zip', blob); });
+      });
+    });
+  </script>
+</Base>

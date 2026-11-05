@@ -1,0 +1,18 @@
+# Validates that the site builds on every commit.
+# Deployment is handled by Cloudflare Pages (connect the repo in the Cloudflare dashboard).
+stages:
+  - build
+
+build:
+  stage: build
+  image: node:22
+  cache:
+    paths:
+      - node_modules/
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week

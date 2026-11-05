@@ -1,0 +1,155 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I merge multiple CSV files into one?', a: 'Drop two or more CSV files into the tool above, arrange them in the order you want, and click Merge. A single combined CSV downloads instantly. Everything runs in your browser with no upload.' },
+  { q: 'What happens if my CSV files have different columns?', a: 'The merger builds the union of all columns automatically. Rows from files that lack a column simply get an empty value there, so no data is lost.' },
+  { q: 'Do duplicate header rows get repeated in the merged file?', a: 'No. Each file is parsed with its own header and the output contains exactly one header row at the top.' },
+  { q: 'How many files can I merge at once?', a: 'There is no fixed limit on the number of files. Practical limits depend on your device memory, but merging dozens of files totalling hundreds of megabytes works smoothly.' },
+  { q: 'Is my data uploaded to a server?', a: 'No. Files are combined locally in your browser using a background worker. Nothing is transmitted anywhere.' },
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Merger', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to merge multiple CSV files into one, handling mismatched columns automatically. Runs locally in the browser.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'CSV Merger', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Merge CSV Files Online Free — Combine Multiple CSVs Into One"
+  description="Free online CSV merger. Combine multiple CSV files into one, even with different columns. No signup, no upload: files are merged privately in your browser."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Merge CSV Files Online</h1>
+    <p class="lead">
+      <strong>How do you combine CSV files?</strong> Drop two or more CSV files below, arrange the
+      order, and click Merge. You get one combined file with a single header row, and mismatched
+      columns are aligned automatically. Free, no signup, fully private.
+    </p>
+
+    <div class="tool">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose CSV files or drag and drop them here">
+        <p><strong>Drop CSV files here</strong> or click to browse (select multiple)</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv" multiple />
+      <ul class="file-list" id="file-list"></ul>
+      <button class="btn" id="run" disabled>Merge CSV files</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot />
+
+    <h2>How to merge CSV files (step by step)</h2>
+    <ol class="steps">
+      <li><strong>Add your files.</strong> Drag and drop multiple CSVs at once, or click the box to select them. Add more at any time.</li>
+      <li><strong>Arrange the order.</strong> Use the up/down arrows to set which file's rows come first. Remove a file with ✕.</li>
+      <li><strong>Click "Merge CSV files".</strong> Headers are unified automatically; missing values become empty cells.</li>
+      <li><strong>Download the result.</strong> One clean CSV with a single header row.</li>
+    </ol>
+
+    <h2>Why use this CSV merger?</h2>
+    <ul>
+      <li><strong>Handles mismatched columns:</strong> the output contains the union of all headers.</li>
+      <li><strong>Order control:</strong> reorder files before merging.</li>
+      <li><strong>Private:</strong> merging happens on your device, never on a server.</li>
+      <li><strong>Free and unlimited:</strong> no signup, no file count or size limits.</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/csv-to-json/">Convert CSV to JSON</a> ·
+      <a href="/guides/">All guides</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, files = [];
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var listEl = $('file-list'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+
+      T.setupDropzone('dropzone', 'file-input', function (fs) {
+        fs.forEach(function (f) { files.push(f); });
+        render();
+      });
+
+      function iconBtn(label, title, fn) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'icon-btn';
+        b.textContent = label;
+        b.title = title;
+        b.setAttribute('aria-label', title);
+        b.addEventListener('click', fn);
+        return b;
+      }
+
+      function render() {
+        listEl.innerHTML = '';
+        files.forEach(function (f, i) {
+          var li = document.createElement('li');
+          var name = document.createElement('span');
+          name.className = 'grow';
+          name.textContent = (i + 1) + '. ' + f.name + ' (' + T.formatBytes(f.size) + ')';
+          li.appendChild(name);
+          li.appendChild(iconBtn('\u2191', 'Move up', function () {
+            if (i > 0) { files.splice(i - 1, 0, files.splice(i, 1)[0]); render(); }
+          }));
+          li.appendChild(iconBtn('\u2193', 'Move down', function () {
+            if (i < files.length - 1) { files.splice(i + 1, 0, files.splice(i, 1)[0]); render(); }
+          }));
+          li.appendChild(iconBtn('\u2715', 'Remove', function () {
+            files.splice(i, 1); render();
+          }));
+          listEl.appendChild(li);
+        });
+        runBtn.disabled = files.length < 2;
+      }
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'progress') {
+          status.textContent = 'Merging… ' + d.rows.toLocaleString() + ' rows combined';
+        } else if (d.type === 'file') {
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          status.textContent = 'Done — ' + d.rows.toLocaleString() + ' rows merged from ' + files.length + ' files.';
+          runBtn.disabled = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      runBtn.addEventListener('click', function () {
+        if (files.length < 2) return;
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+        status.textContent = 'Merging…';
+        worker.postMessage({ op: 'merge', files: files });
+      });
+    });
+  </script>
+</Base>

@@ -1,0 +1,248 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'CSV Toolbox',
+    url: Astro.site?.toString(),
+    description: 'Free online CSV tools: split, merge, deduplicate and convert CSV files in your browser. No signup, no upload — 100% private.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'CSV Toolbox',
+    url: Astro.site?.toString(),
+    logo: new URL('/favicon.svg', Astro.site).toString(),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Are these CSV tools really free?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. Every tool is completely free with no signup, no usage limits and no premium tier. The site is supported by unobtrusive ads.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Is my data uploaded to a server?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No. All processing happens inside your browser using JavaScript. Your files are never transmitted anywhere, which also makes the tools fast and safe for sensitive data.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How large a CSV file can I process?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Files are processed locally in your browser memory. Files of dozens to hundreds of megabytes typically process smoothly on modern laptops; the practical ceiling depends on your device\'s available memory.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Do the tools work on Excel exports?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. Any standard CSV works, including files exported from Excel, Google Sheets, databases and CRMs. Delimiters and quoting are detected automatically.',
+        },
+      },
+    ],
+  },
+];
+---
+
+<Base
+  title="CSV Toolbox — Free Online CSV Splitter, Merger & Converter (No Signup)"
+  description="Split, merge, remove duplicate rows, and convert CSV files free in your browser. No signup, no file upload — everything runs locally on your device. Handles large files fast."
+  schema={schema}
+>
+  <section class="hero">
+    <h1>Free CSV tools that run entirely in your browser</h1>
+    <p class="lead">
+      Split, merge, remove duplicate rows, and convert CSV files in seconds. No signup, no installation,
+      and your files <strong>never leave your device</strong>.
+    </p>
+    <div class="badges">
+      <span class="badge">100% Free</span>
+      <span class="badge">No Signup</span>
+      <span class="badge">No File Upload</span>
+      <span class="badge">Handles Large Files</span>
+      <span class="badge">Client-Side Processing</span>
+    </div>
+    <a class="btn" href="/split-csv/">Split a CSV file now →</a>
+  </section>
+
+  <div class="container">
+    <h2>Core CSV Utilities</h2>
+    <div class="cards">
+      <a class="card" href="/split-csv/">
+        <h3>CSV Splitter</h3>
+        <p>Split large CSV files by number of rows, file size, or column value. Keeps headers in every part.</p>
+      </a>
+      <a class="card" href="/merge-csv/">
+        <h3>CSV Merger</h3>
+        <p>Combine multiple CSV files into one, even when their columns don't match exactly.</p>
+      </a>
+      <a class="card" href="/remove-duplicates-csv/">
+        <h3>Duplicate Remover</h3>
+        <p>Delete duplicate rows from a CSV — across all columns or only the columns you choose.</p>
+      </a>
+      <a class="card" href="/csv-viewer/">
+        <h3>Large CSV Viewer</h3>
+        <p>Open and view large CSV files in your browser. Fast search and client-side paging.</p>
+      </a>
+      <a class="card" href="/change-delimiter-csv/">
+        <h3>Delimiter Changer</h3>
+        <p>Convert separator commas to semicolons, tabs (TSV), pipes, or custom characters instantly.</p>
+      </a>
+      <a class="card" href="/extract-columns-csv/">
+        <h3>Column Extractor</h3>
+        <p>Select and extract specific columns from your CSV files to create clean, simplified subsets.</p>
+      </a>
+    </div>
+
+    <h2>Data Format Converters</h2>
+    <div class="cards">
+      <a class="card" href="/csv-to-json/">
+        <h3>CSV ⇄ JSON</h3>
+        <p>Convert CSV data to a pretty-printed JSON array of objects, or JSON back to standard CSV.</p>
+      </a>
+      <a class="card" href="/csv-to-markdown/">
+        <h3>CSV ⇄ Markdown</h3>
+        <p>Generate GitHub-flavored markdown tables from CSV, or extract markdown tables back into CSV.</p>
+      </a>
+      <a class="card" href="/csv-to-html/">
+        <h3>CSV ⇄ HTML</h3>
+        <p>Transform tabular rows into semantic HTML &lt;table&gt; code, or convert HTML tables to CSV.</p>
+      </a>
+      <a class="card" href="/csv-to-yaml/">
+        <h3>CSV ⇄ YAML</h3>
+        <p>Format spreadsheet rows into clean YAML documents, or parse YAML records back into CSV.</p>
+      </a>
+      <a class="card" href="/csv-to-xml/">
+        <h3>CSV → XML</h3>
+        <p>Convert comma-separated values to structured XML markup with tag names matching headers.</p>
+      </a>
+    </div>
+  </div>
+
+  <AdSlot />
+
+  <div class="container">
+    <div class="seo-section">
+      <div class="seo-header">
+        <span class="eyebrow">Enterprise Privacy</span>
+        <h2>The Ultimate Privacy-First Online CSV Toolbox</h2>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Card 1: Privacy & FileReader (Wide) -->
+        <div class="bento-card span-2">
+          <div>
+            <h3>Local Processing: Your Data Stays 100% Private</h3>
+            <p>
+              In today's data-driven world, Comma-Separated Values (CSV) files are the universal language of databases, spreadsheets, CRMs, and email marketing software. Whether you are managing customer directories, importing sales reports, or cleaning database tables, you constantly need to split, merge, convert, or clean up CSV data. However, most online utility websites force you to upload your sensitive spreadsheets to their remote servers, which raises massive data protection issues and exposes you to potential leaks.
+            </p>
+            <p>
+              <strong>CSV Toolbox</strong> solves this mismatch by offering a suite of professional-grade, web-based CSV utilities that run <strong>entirely inside your browser</strong>. By leveraging HTML5 FileReader APIs and client-side JavaScript streaming in Web Workers, files are processed locally on your device. Your data never leaves your computer, making it secure and fully compliant with data policies like GDPR and HIPAA.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 2: Speed & Web Workers -->
+        <div class="bento-card">
+          <div>
+            <h3>Local Processing: Speed Meets Privacy</h3>
+            <p>
+              Uploading files to online servers is slow, especially when dealing with large datasets of hundreds of megabytes. CSV Toolbox removes the upload step completely.
+            </p>
+            <p>
+              Because the data is read directly from your local file system into your browser's execution memory, files are processed without network latency. Files of dozens to hundreds of megabytes can be split, merged, or converted without uploading to third-party infrastructure.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 3: Core Utilities -->
+        <div class="bento-card">
+          <div>
+            <h3>Core CSV Utilities</h3>
+            <p>
+              Our toolkit contains everything you need to manage spreadsheet files without opening heavy applications like Microsoft Excel or Google Sheets (which often slow down or truncate rows beyond the 1.04 million limit):
+            </p>
+            <ul class="bento-list">
+              <li><strong>Splitter:</strong> Divide large CSVs by rows, size, or unique values.</li>
+              <li><strong>Merger:</strong> Combine multiple spreadsheets into one with aligned columns.</li>
+              <li><strong>Deduplicator:</strong> Delete duplicate rows across selected columns dynamically.</li>
+              <li><strong>Large Viewer:</strong> Read large files with fast pagination and search.</li>
+              <li><strong>Delimiter Changer:</strong> Convert separators (commas, semicolons, tabs) instantly.</li>
+              <li><strong>Extractor:</strong> Filter and export specific columns.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Card 4: Format Converters -->
+        <div class="bento-card">
+          <div>
+            <h3>Format Converters for Developers</h3>
+            <p>
+              Need to integrate tabular data into code or documentation? CSV Toolbox features one-click format converters:
+            </p>
+            <ul class="bento-list">
+              <li><strong>CSV to JSON:</strong> Convert spreadsheet rows to standard JSON objects.</li>
+              <li><strong>CSV to XML:</strong> Map your rows to structured XML tags.</li>
+              <li><strong>CSV to YAML:</strong> Generate clean configurations.</li>
+              <li><strong>CSV to Markdown:</strong> Export clean markdown tables for wikis or AI prompts.</li>
+              <li><strong>CSV to HTML:</strong> Output HTML table codes for fast web embeds.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Card 5: Open Source & Free -->
+        <div class="bento-card">
+          <div>
+            <h3>100% Free & Open Source</h3>
+            <p>
+              CSV Toolbox is 100% free with no signups, no paywalls, and no usage limits. Our processing code is open source, allowing developers to inspect exactly how their files are handled.
+            </p>
+            <p>
+              Start splitting, converting, and cleaning your CSVs safely today with absolute peace of mind.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <div class="faq-header">
+        <span class="eyebrow">Q&A</span>
+        <h2 id="faq">Frequently Asked Questions</h2>
+      </div>
+      <div class="faq-grid">
+        <details class="faq-item" open>
+          <summary>Are these CSV tools really free?</summary>
+          <p>Yes. Every tool is completely free with no signup, no usage limits and no premium tier. The site is supported by unobtrusive ads.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Is my data uploaded to a server?</summary>
+          <p>No. All processing happens inside your browser using JavaScript. Your files are never transmitted anywhere, which also makes the tools fast and safe for sensitive data.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How large a CSV file can I process?</summary>
+          <p>Files are processed locally in your browser memory. Files of dozens to hundreds of megabytes typically work fine on a modern laptop; the practical limit depends on your device's available memory.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Do the tools work on Excel exports?</summary>
+          <p>Yes. Any standard CSV works, including files exported from Excel, Google Sheets, databases and CRMs. Delimiters and quoting are detected automatically.</p>
+        </details>
+      </div>
+    </section>
+  </div>
+</Base>

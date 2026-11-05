@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const guides = [
+  { href: '/guides/how-to-split-a-large-csv-file-without-excel/', title: 'How to Split a Large CSV File Without Excel', desc: 'Excel chokes past 1,048,576 rows. Here is how to split any large CSV in seconds, free and offline.' },
+  { href: '/guides/split-csv-by-column-value/', title: 'How to Split a CSV by Column Value', desc: 'Create one file per country, category or customer automatically from a single CSV.' },
+  { href: '/guides/merge-multiple-csv-files-into-one/', title: 'How to Merge Multiple CSV Files Into One', desc: 'Combine many CSV exports into a single clean file, even when columns differ.' },
+  { href: '/guides/remove-duplicate-rows-from-csv/', title: 'How to Remove Duplicate Rows From a CSV', desc: 'Clean duplicate contacts, orders or records from a CSV, by whole row or specific columns.' },
+  { href: '/guides/convert-csv-to-json/', title: 'How to Convert CSV to JSON (and Back)', desc: 'Turn spreadsheet exports into API-ready JSON in one click, no coding required.' },
+];
+---
+
+<Base
+  title="CSV Guides & Tutorials — CSV Toolbox"
+  description="Practical guides for working with CSV files: splitting large files, merging exports, removing duplicates and converting to JSON. All with free browser-based tools."
+>
+  <div class="container">
+    <h1>CSV Guides &amp; Tutorials</h1>
+    <p class="lead">Practical, step-by-step answers to the most common CSV problems. Every guide pairs with a free tool that runs privately in your browser.</p>
+    <div class="cards">
+      {guides.map((g) => (
+        <a class="card" href={g.href}>
+          <h3>{g.title}</h3>
+          <p>{g.desc}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</Base>

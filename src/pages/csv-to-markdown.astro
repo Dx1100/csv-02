@@ -1,0 +1,155 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I convert a CSV to a Markdown table?', a: 'Select "CSV → Markdown", choose your CSV file, and click Convert. The tool parses headers and rows, generating a markdown table grid with formatting separators (e.g. "|" and "---"). Copy or download the result.' },
+  { q: 'How do I convert a Markdown table to CSV?', a: 'Select "Markdown → CSV", drop your Markdown (.md or .txt) file, and click Convert. The tool automatically detects the markdown table structure, cleans column boundaries, and exports a standard CSV file.' },
+  { q: 'Does this output support GitHub Flavored Markdown (GFM)?', a: 'Yes. The generated output is a standard GFM-compliant table, which works on GitHub, GitLab, Reddit, Notion, Dev.to, and general markdown editors.' },
+  { q: 'How are vertical pipes ("|") in cells handled?', a: 'When converting to Markdown, vertical pipes are escaped as "\\|". When converting Markdown back to CSV, escaped pipes are properly decoded into regular characters.' },
+  { q: 'Is my content uploaded to your server?', a: 'No, everything is completed inside your web browser. No data leaves your machine, ensuring complete privacy.' }
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV ⇄ Markdown Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to Markdown and Markdown to CSV converter. Convert tabular data locally in the browser with zero uploads.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'CSV ⇄ Markdown', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="CSV ⇄ Markdown Table Converter Online Free — Both Directions"
+  description="Convert CSV files to formatted Markdown tables, or convert Markdown tables back to CSV. Standard GitHub-flavored markdown. Free, fast, and processed locally in your browser."
+  schema={schema}
+>
+  <div class="container">
+    <h1>CSV ⇄ Markdown Table Converter</h1>
+    <p class="lead">
+      <strong>Need to convert between CSV files and Markdown tables?</strong> 
+      Convert spreadsheet rows into clean GitHub-flavored Markdown tables, or extract tabular data from Markdown documents back into standard CSV. 
+      Runs 100% locally in your browser for complete privacy.
+    </p>
+
+    <div class="tool">
+      <div class="options">
+        <label class="field">Direction
+          <select id="direction">
+            <option value="c2m">CSV → Markdown</option>
+            <option value="m2c">Markdown → CSV</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
+        <p><strong id="dz-label">Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv,.tsv,.txt" />
+      <p class="status" id="file-name" hidden></p>
+      <div class="preview-wrap" id="preview" hidden></div>
+      
+      <button class="btn" id="run" disabled>Convert</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot />
+
+    <h2>How the conversion works</h2>
+    <ol class="steps">
+      <li><strong>Choose your direction:</strong> Select <em>CSV → Markdown</em> to build a markdown table from a spreadsheet, or <em>Markdown → CSV</em> to extract data from a markdown document.</li>
+      <li><strong>Select your file:</strong> Drag and drop your <code>.csv</code>, <code>.tsv</code>, <code>.md</code>, or <code>.txt</code> file. A preview verifies file content immediately.</li>
+      <li><strong>Click Convert:</strong> The Web Worker parses rows, respects pipe characters and delimiters, and outputs the converted file.</li>
+      <li><strong>Download your result:</strong> Save the resulting Markdown or CSV file directly to your computer.</li>
+    </ol>
+
+    <h2>Why convert with our local tool?</h2>
+    <ul>
+      <li><strong>Bidirectional:</strong> Seamlessly move from CSV to Markdown and back from Markdown to CSV without extra tools.</li>
+      <li><strong>Escapes Pipe Characters:</strong> Correctly escapes <code>|</code> characters in text cells, keeping your tables aligned.</li>
+      <li><strong>Multi-line Support:</strong> Replaces newline breaks within cells with HTML <code>&lt;br&gt;</code> tags so rows don't shatter.</li>
+      <li><strong>100% Private:</strong> Data processing never leaves your device.</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/csv-to-html/">CSV ⇄ HTML</a> ·
+      <a href="/csv-to-json/">CSV ⇄ JSON</a> ·
+      <a href="/csv-to-yaml/">CSV ⇄ YAML</a> ·
+      <a href="/guides/">All guides</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+
+      dirSel.addEventListener('change', function () {
+        var c2m = dirSel.value === 'c2m';
+        $('dz-label').textContent = c2m ? 'Drop your CSV file here' : 'Drop your Markdown (.md, .txt) file here';
+        $('file-input').accept = c2m ? '.csv,text/csv,.tsv,.txt' : '.md,.markdown,.txt';
+        file = null;
+        $('file-name').hidden = true;
+        $('preview').hidden = true;
+        runBtn.disabled = true;
+        resultsEl.innerHTML = '';
+        status.textContent = '';
+      });
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        runBtn.disabled = false;
+        if (dirSel.value === 'c2m') {
+          T.previewCSV(file, $('preview'), 6);
+        } else {
+          T.previewText(file, $('preview'), 8);
+        }
+      });
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'file') {
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          var targetFmt = dirSel.value === 'c2m' ? 'Markdown' : 'CSV';
+          status.textContent = 'Done — successfully converted ' + d.rows.toLocaleString() + ' rows to ' + targetFmt + '.';
+          runBtn.disabled = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      runBtn.addEventListener('click', function () {
+        if (!file) return;
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+        status.textContent = 'Converting…';
+        worker.postMessage({ 
+          op: dirSel.value === 'c2m' ? 'csv-to-markdown' : 'markdown-to-csv', 
+          file: file 
+        });
+      });
+    });
+  </script>
+</Base>

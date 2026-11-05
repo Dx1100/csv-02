@@ -1,0 +1,35 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  content?: {
+    title: string;
+    description: string;
+    date?: string;
+  };
+  title?: string;
+  description?: string;
+  date?: string;
+}
+
+const props = Astro.props;
+const title = props.content?.title || props.title || 'Guide — CSV Toolbox';
+const description = props.content?.description || props.description || '';
+const date = props.content?.date || props.date;
+---
+
+<Base title={`${title} — CSV Toolbox`} description={description}>
+  <article class="container guide">
+    <h1>{title}</h1>
+    {date && <p class="muted">Published: {date}</p>}
+    <slot />
+    <aside class="related">
+      <strong>Related tools:</strong>{' '}
+      <a href="/split-csv/">Split CSV</a> ·{' '}
+      <a href="/merge-csv/">Merge CSV</a> ·{' '}
+      <a href="/remove-duplicates-csv/">Remove Duplicates</a> ·{' '}
+      <a href="/csv-to-json/">CSV to JSON</a> ·{' '}
+      <a href="/guides/">All guides</a>
+    </aside>
+  </article>
+</Base>

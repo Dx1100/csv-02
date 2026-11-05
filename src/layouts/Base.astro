@@ -1,0 +1,94 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  schema?: object[];
+  noindex?: boolean;
+}
+
+const { title, description, schema = [], noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Prevent search indexing on non-production Cloudflare Pages preview/staging builds, or on explicit error pages
+const isPreview = import.meta.env.CF_PAGES_BRANCH && import.meta.env.CF_PAGES_BRANCH !== 'main';
+const shouldNoindex = noindex || isPreview;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {shouldNoindex && <meta name="robots" content="noindex, follow" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CSV Toolbox" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="theme-color" content="#0d9488" />
+    {schema.map((s) => <script is:inline type="application/ld+json" set:html={JSON.stringify(s)} />)}
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container" aria-label="Main navigation">
+        <a class="logo" href="/">CSV Toolbox</a>
+        <ul>
+          <li><a href="/split-csv/">Split CSV</a></li>
+          <li><a href="/merge-csv/">Merge CSV</a></li>
+          <li><a href="/remove-duplicates-csv/">Remove Duplicates</a></li>
+          <li><a href="/csv-viewer/">CSV Viewer</a></li>
+          <li><a href="/change-delimiter-csv/">Change Delimiter</a></li>
+          <li><a href="/extract-columns-csv/">Extract Columns</a></li>
+          <li><a href="/csv-to-json/">CSV ⇄ JSON</a></li>
+          <li><a href="/csv-to-markdown/">CSV ⇄ Markdown</a></li>
+          <li><a href="/csv-to-html/">CSV ⇄ HTML</a></li>
+          <li><a href="/csv-to-yaml/">CSV ⇄ YAML</a></li>
+          <li><a href="/csv-to-xml/">CSV → XML</a></li>
+          <li><a href="/guides/">Guides</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        <p><strong>CSV Toolbox</strong> — free, private, browser-based CSV tools. Your files are processed locally and never leave your device.</p>
+        <ul>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy-policy/">Privacy Policy</a></li>
+          <li><a href="/terms/">Terms of Use</a></li>
+          <li><a href="/contact/">Contact</a></li>
+          <li><a href="/guides/">Guides</a></li>
+        </ul>
+        <div class="footer-tools">
+          <p>All CSV Tools & Utilities:</p>
+          <ul>
+            <li><a href="/split-csv/">CSV Splitter</a></li>
+            <li><a href="/merge-csv/">CSV Merger</a></li>
+            <li><a href="/remove-duplicates-csv/">Duplicate Remover</a></li>
+            <li><a href="/csv-viewer/">CSV Viewer</a></li>
+            <li><a href="/change-delimiter-csv/">Delimiter Changer</a></li>
+            <li><a href="/extract-columns-csv/">Column Extractor</a></li>
+            <li><a href="/csv-to-json/">CSV ⇄ JSON</a></li>
+            <li><a href="/csv-to-markdown/">CSV ⇄ Markdown</a></li>
+            <li><a href="/csv-to-html/">CSV ⇄ HTML</a></li>
+            <li><a href="/csv-to-yaml/">CSV ⇄ YAML</a></li>
+            <li><a href="/csv-to-xml/">CSV → XML</a></li>
+          </ul>
+        </div>
+        <p class="muted">© 2026 CSV Toolbox</p>
+      </div>
+    </footer>
+  </body>
+</html>

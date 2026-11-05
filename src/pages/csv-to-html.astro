@@ -1,0 +1,187 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I convert a CSV file to an HTML table?', a: 'Select "CSV → HTML", upload your CSV file, and click Convert. The converter parses the table structure and creates a clean HTML <table> code block that you can download or embed.' },
+  { q: 'How do I convert an HTML table to CSV?', a: 'Select "HTML → CSV", upload an HTML document (.html or .htm), and click Convert. The tool extracts all rows and cells from the <table> elements and outputs a structured CSV file.' },
+  { q: 'Does the generated HTML table have default styles?', a: 'No. The converter outputs clean semantic HTML (using standard <table>, <thead>, <tbody>, <th>, <tr>, <td> elements) without styling, making it simple for you to style with your own CSS stylesheet.' },
+  { q: 'How are HTML tag characters (<, >, &) in cells handled?', a: 'All cell values are properly decoded or entity-escaped to prevent breaking layouts or corrupting cell contents.' },
+  { q: 'Is there a limit to how many rows I can convert?', a: 'The processing runs directly in your browser using client-side Web Workers, meaning files are parsed locally without crashing or timing out, subject only to your device memory.' }
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV ⇄ HTML Table Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to HTML table and HTML table to CSV converter. Convert spreadsheet values into HTML markup and vice versa locally in browser.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'CSV ⇄ HTML Converter', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="CSV ⇄ HTML Table Converter Online Free — Both Directions"
+  description="Convert your CSV spreadsheet data into semantic HTML tables, or extract HTML table tags back into standard CSV. Clean markup, client-side processing, no signups."
+  schema={schema}
+>
+  <div class="container">
+    <h1>CSV ⇄ HTML Table Converter</h1>
+    <p class="lead">
+      <strong>Need to convert between CSV files and HTML tables?</strong> 
+      Transform CSV data into clean semantic <code>&lt;table&gt;</code> HTML code, or upload an HTML webpage to extract table contents into a spreadsheet CSV. 
+      Runs 100% locally in your browser for total confidentiality.
+    </p>
+
+    <div class="tool">
+      <div class="options">
+        <label class="field">Direction
+          <select id="direction">
+            <option value="c2h">CSV → HTML</option>
+            <option value="h2c">HTML → CSV</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
+        <p><strong id="dz-label">Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv,.tsv,.txt" />
+      <p class="status" id="file-name" hidden></p>
+      <div class="preview-wrap" id="preview" hidden></div>
+      
+      <button class="btn" id="run" disabled>Convert</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot />
+
+    <h2>How the conversion works</h2>
+    <ol class="steps">
+      <li><strong>Select direction:</strong> Choose <em>CSV → HTML</em> to format rows into HTML table tags, or <em>HTML → CSV</em> to extract tables from web pages.</li>
+      <li><strong>Select your file:</strong> Upload a <code>.csv</code>, <code>.tsv</code>, or <code>.html</code> file. The preview box reflects the file structure instantly.</li>
+      <li><strong>Start conversion:</strong> Click Convert to process table rows in a local Web Worker.</li>
+      <li><strong>Download your result:</strong> Download the clean <code>.html</code> or <code>.csv</code> file directly to your device.</li>
+    </ol>
+
+    <h2>Why use our offline HTML table generator?</h2>
+    <ul>
+      <li><strong>Bidirectional:</strong> Quickly toggle between generating HTML markup and parsing HTML tables back into spreadsheets.</li>
+      <li><strong>Escaped HTML values:</strong> Securely converts HTML symbols inside your dataset, avoiding display errors.</li>
+      <li><strong>Clean &amp; Unstyled:</strong> Generated tables have no inline styling or bloat, making them 100% CSS friendly.</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/split-csv/">Split CSV files</a> ·
+      <a href="/csv-to-markdown/">CSV ⇄ Markdown</a> ·
+      <a href="/csv-to-json/">CSV ⇄ JSON</a> ·
+      <a href="/csv-to-yaml/">CSV ⇄ YAML</a> ·
+      <a href="/guides/">All guides</a>
+    </aside>
+  </div>
+
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var worker = new Worker('/workers/csv-worker.js');
+      var $ = function (id) { return document.getElementById(id); };
+      var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+
+      dirSel.addEventListener('change', function () {
+        var c2h = dirSel.value === 'c2h';
+        $('dz-label').textContent = c2h ? 'Drop your CSV file here' : 'Drop your HTML (.html, .htm) file here';
+        $('file-input').accept = c2h ? '.csv,text/csv,.tsv,.txt' : '.html,.htm,.txt';
+        file = null;
+        $('file-name').hidden = true;
+        $('preview').hidden = true;
+        runBtn.disabled = true;
+        resultsEl.innerHTML = '';
+        status.textContent = '';
+      });
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        runBtn.disabled = false;
+        if (dirSel.value === 'c2h') {
+          T.previewCSV(file, $('preview'), 6);
+        } else {
+          T.previewText(file, $('preview'), 8);
+        }
+      });
+
+      worker.onmessage = function (e) {
+        var d = e.data;
+        if (d.type === 'file') {
+          T.addResult(resultsEl, d);
+        } else if (d.type === 'done') {
+          var targetFmt = dirSel.value === 'c2h' ? 'HTML' : 'CSV';
+          status.textContent = 'Done — successfully converted ' + d.rows.toLocaleString() + ' rows to ' + targetFmt + '.';
+          runBtn.disabled = false;
+        } else if (d.type === 'error') {
+          status.textContent = 'Error: ' + d.message;
+          runBtn.disabled = false;
+        }
+      };
+
+      runBtn.addEventListener('click', function () {
+        if (!file) return;
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+        status.textContent = 'Converting…';
+
+        if (dirSel.value === 'c2h') {
+          worker.postMessage({ op: 'csv-to-html', file: file });
+        } else {
+          // Use DOMParser in the main window for robust HTML table parsing
+          file.text().then(function (htmlStr) {
+            try {
+              var parser = new DOMParser();
+              var doc = parser.parseFromString(htmlStr, 'text/html');
+              var table = doc.querySelector('table');
+              if (!table) {
+                // Let worker fallback handle it
+                worker.postMessage({ op: 'html-to-csv', file: file });
+                return;
+              }
+              var trs = table.querySelectorAll('tr');
+              var parsedRows = [];
+              trs.forEach(function (tr) {
+                var cells = tr.querySelectorAll('th, td');
+                if (cells.length) {
+                  var rowData = [];
+                  cells.forEach(function (cell) {
+                    rowData.push(cell.textContent.trim());
+                  });
+                  parsedRows.push(rowData);
+                }
+              });
+              if (!parsedRows.length) {
+                worker.postMessage({ op: 'html-to-csv', file: file });
+                return;
+              }
+              worker.postMessage({ op: 'html-to-csv', file: file, content: parsedRows });
+            } catch (err) {
+              worker.postMessage({ op: 'html-to-csv', file: file });
+            }
+          });
+        }
+      });
+    });
+  </script>
+</Base>

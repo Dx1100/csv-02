@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="500 — Server Error — CSV Toolbox"
+  description="An unexpected error occurred while loading this page on CSV Toolbox."
+  noindex={true}
+>
+  <div class="container guide" style="text-align: center; padding: 4rem 1.5rem;">
+    <h1>500 — Server Error</h1>
+    <p class="lead">An unexpected error occurred while generating this page. Please try refreshing.</p>
+    <div style="margin: 2rem 0; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a class="btn" href="/">Return to Home</a>
+      <a class="btn" href="/split-csv/" style="background: var(--brand-dark);">CSV Splitter</a>
+      <a class="btn" href="/merge-csv/" style="background: var(--brand-dark);">CSV Merger</a>
+      <a class="btn" href="/contact/" style="background: var(--muted);">Report Issue</a>
+    </div>
+  </div>
+</Base>
