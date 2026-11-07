@@ -3,7 +3,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://free-csv-toolbox.pages.dev',
+  site: 'https://freecsvtoolbox.com',
   integrations: [sitemap()],
   server: {
     host: '0.0.0.0',

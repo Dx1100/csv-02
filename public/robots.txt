@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://free-csv-toolbox.pages.dev/sitemap-index.xml
+Sitemap: https://freecsvtoolbox.com/sitemap-index.xml
