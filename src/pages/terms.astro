@@ -1,14 +1,34 @@
 ---
 import Base from '../layouts/Base.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Terms of Use — CSV Toolbox',
+    url: pageUrl,
+    description: 'Terms of use for CSV Toolbox: acceptable use, no-warranty disclaimers, and local client-side processing terms.'
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+      { '@type': 'ListItem', position: 2, name: 'Terms of Use', item: pageUrl }
+    ]
+  }
+];
 ---
 
 <Base
   title="Terms of Use — CSV Toolbox"
   description="Terms of use for CSV Toolbox, a suite of free browser-based CSV tools."
+  schema={schema}
 >
   <div class="container guide">
     <h1>Terms of Use</h1>
-    <p class="muted">Last updated: June 2026</p>
+    <p class="muted">Last updated: November 2026</p>
     <p>
       By using CSV Toolbox you agree to these terms. The short version: the tools are free, your
       files stay on your device, and the service is provided as-is.

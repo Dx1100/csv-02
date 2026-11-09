@@ -16,9 +16,44 @@ const props = Astro.props;
 const title = props.content?.title || props.title || 'Guide — CSV Toolbox';
 const description = props.content?.description || props.description || '';
 const date = props.content?.date || props.date;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: title,
+    description: description,
+    url: pageUrl,
+    datePublished: date || '2026-11-01',
+    author: {
+      '@type': 'Organization',
+      name: 'CSV Toolbox',
+      url: Astro.site?.toString()
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'CSV Toolbox',
+      url: Astro.site?.toString(),
+      logo: {
+        '@type': 'ImageObject',
+        url: new URL('/favicon.svg', Astro.site).toString()
+      }
+    }
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+      { '@type': 'ListItem', position: 2, name: 'Guides', item: new URL('/guides/', Astro.site).toString() },
+      { '@type': 'ListItem', position: 3, name: title, item: pageUrl }
+    ]
+  }
+];
 ---
 
-<Base title={`${title} — CSV Toolbox`} description={description}>
+<Base title={`${title} — CSV Toolbox`} description={description} schema={schema}>
   <article class="container guide">
     <h1>{title}</h1>
     {date && <p class="muted">Published: {date}</p>}

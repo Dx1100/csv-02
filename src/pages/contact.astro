@@ -1,10 +1,41 @@
 ---
 import Base from '../layouts/Base.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact CSV Toolbox',
+    url: pageUrl,
+    description: 'Contact CSV Toolbox with technical inquiries, partnership questions, bug reports, or feature suggestions.',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'CSV Toolbox',
+      url: Astro.site?.toString(),
+      email: 'help@freecsvtoolbox.com',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        email: 'help@freecsvtoolbox.com',
+        contactType: 'Customer Support'
+      }
+    }
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+      { '@type': 'ListItem', position: 2, name: 'Contact', item: pageUrl }
+    ]
+  }
+];
 ---
 
 <Base
-  title="Contact — CSV Toolbox"
-  description="Contact CSV Toolbox with questions, bug reports or feature requests."
+  title="Contact CSV Toolbox — Support, Bug Reports & Feature Requests"
+  description="Contact the CSV Toolbox engineering team with questions, bug reports, feature requests, or custom delimiter suggestions."
+  schema={schema}
 >
   <div class="container guide">
     <h1>Contact</h1>
