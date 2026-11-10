@@ -5,18 +5,48 @@ interface Props {
   content?: {
     title: string;
     description: string;
-    date?: string;
+    date?: string | Date;
   };
   title?: string;
   description?: string;
-  date?: string;
+  date?: string | Date;
 }
 
 const props = Astro.props;
 const title = props.content?.title || props.title || 'Guide — CSV Toolbox';
 const description = props.content?.description || props.description || '';
-const date = props.content?.date || props.date;
+const rawDate = props.content?.date || props.date;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+
+function formatHumanDate(d: string | Date | undefined): string {
+  if (!d) return '';
+  try {
+    const dateObj = d instanceof Date ? d : new Date(d);
+    if (isNaN(dateObj.getTime())) return String(d);
+    return dateObj.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+  } catch {
+    return String(d);
+  }
+}
+
+function getIsoDate(d: string | Date | undefined): string {
+  if (!d) return '2026-11-01';
+  try {
+    const dateObj = d instanceof Date ? d : new Date(d);
+    if (isNaN(dateObj.getTime())) return String(d);
+    return dateObj.toISOString().split('T')[0];
+  } catch {
+    return '2026-11-01';
+  }
+}
+
+const displayDate = formatHumanDate(rawDate);
+const isoDate = getIsoDate(rawDate);
 
 const schema = [
   {
@@ -25,7 +55,7 @@ const schema = [
     headline: title,
     description: description,
     url: pageUrl,
-    datePublished: date || '2026-11-01',
+    datePublished: isoDate,
     author: {
       '@type': 'Organization',
       name: 'CSV Toolbox',
@@ -56,7 +86,7 @@ const schema = [
 <Base title={`${title} — CSV Toolbox`} description={description} schema={schema}>
   <article class="container guide">
     <h1>{title}</h1>
-    {date && <p class="muted">Published: {date}</p>}
+    {displayDate && <p class="muted">Published: <time datetime={isoDate}>{displayDate}</time></p>}
     <slot />
     <aside class="related">
       <strong>Related tools:</strong>{' '}
