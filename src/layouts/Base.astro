@@ -25,23 +25,30 @@ const shouldNoindex = noindex || isPreview;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     {shouldNoindex && <meta name="robots" content="noindex, follow" />}
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="CSV Toolbox" />
+    <meta property="og:site_name" content="Free CSV Toolbox" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={new URL('/og-image.png', Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL('/og-image.png', Astro.site)} />
     <meta name="theme-color" content="#0d9488" />
     {schema.map((s) => <script is:inline type="application/ld+json" set:html={JSON.stringify(s)} />)}
   </head>
   <body>
     <header class="site-header">
       <nav class="container" aria-label="Main navigation">
-        <a class="logo" href="/">CSV Toolbox</a>
+        <a class="logo-link" href="/" aria-label="Free CSV Toolbox Home">
+          <img src="/logo.png" alt="Free CSV Toolbox" class="site-logo-img" width="180" height="40" />
+        </a>
         <ul>
           <li><a href="/split-csv/">Split CSV</a></li>
           <li><a href="/merge-csv/">Merge CSV</a></li>
@@ -81,7 +88,10 @@ const shouldNoindex = noindex || isPreview;
         </div>
         <div class="footer-meta">
           <div class="footer-brand">
-            <p class="footer-desc"><strong>CSV Toolbox</strong> — free, private, browser-based CSV tools. Your files are processed locally and never leave your device.</p>
+            <a href="/" class="footer-logo-link" aria-label="Free CSV Toolbox Home">
+              <img src="/logo.png" alt="Free CSV Toolbox" class="footer-logo-img" width="160" height="34" />
+            </a>
+            <p class="footer-desc"><strong>Free CSV Toolbox</strong> — free, private, browser-based CSV tools. Your files are processed locally and never leave your device.</p>
             <div class="footer-socials">
               <a href="https://www.instagram.com/freecsvtoolbox" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
               <span class="muted">·</span>
