@@ -1,9 +1,16 @@
 ---
 /*
   Reusable AdSlot component.
+  Configured for zero Cumulative Layout Shift (CLS) and AdSense Confirmed Clicks compliance.
 */
+interface Props {
+  format?: 'horizontal' | 'rectangle' | 'auto';
+  class?: string;
+}
+
+const { format = 'horizontal', class: className = '' } = Astro.props;
 ---
 
-<div class="ad-slot">
+<div class={`ad-slot ad-slot-${format} ${className}`.trim()} data-ad-format={format}>
   <span class="ad-placeholder">Advertisement</span>
 </div>

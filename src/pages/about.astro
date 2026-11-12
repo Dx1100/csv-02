@@ -8,12 +8,13 @@ const schema = [
     '@type': 'AboutPage',
     name: 'About CSV Toolbox',
     url: pageUrl,
-    description: 'Learn about CSV Toolbox: our mission, technology stack (Astro, Web Workers), privacy-first client-side architecture, and open source development.',
+    description: 'Learn about CSV Toolbox: our engineering team, client-side Web Worker architecture, zero-upload privacy model, and editorial accuracy standards.',
     mainEntity: {
       '@type': 'Organization',
       name: 'CSV Toolbox',
       url: Astro.site?.toString(),
       logo: new URL('/logo.png', Astro.site).toString(),
+      email: 'freecsvtoolbox@gmail.com',
       sameAs: [
         'https://www.instagram.com/freecsvtoolbox',
         'https://www.pinterest.com/freecsvtoolbox',
@@ -34,43 +35,61 @@ const schema = [
 ---
 
 <Base
-  title="About CSV Toolbox — Mission, Technology & Privacy Architecture"
-  description="Learn about CSV Toolbox: our mission, technology stack (Astro, HTML5 Web Workers), 100% client-side privacy architecture, and open source development."
+  title="About CSV Toolbox — Engineering Mission, Architecture & Standards"
+  description="Learn about CSV Toolbox: our engineering team, 100% client-side Web Worker architecture, zero-upload privacy guarantees, and editorial accuracy standards."
   schema={schema}
 >
   <div class="container guide">
     <h1>About CSV Toolbox</h1>
     <p class="lead">
-      CSV Toolbox is an independent, zero-latency web utility built for data analysts, marketers, software engineers, and spreadsheet users who demand fast, private tabular data processing.
+      CSV Toolbox is an independent, zero-latency web utility built by a dedicated team of software engineers, ETL practitioners, and data privacy advocates. We build fast, client-side browser utilities for analysts, developers, marketers, and spreadsheet users who demand absolute data privacy and instantaneous processing.
+    </p>
+
+    <h2>Who Built CSV Toolbox</h2>
+    <p>
+      Our team brings decades of combined experience across data engineering, enterprise database migrations, and modern web systems. After repeatedly witnessing colleagues and clients risk confidential company spreadsheets, proprietary pricing lists, and customer PII on untrusted cloud converter websites—or struggle with Excel crashing on files exceeding 1,048,576 rows—we engineered CSV Toolbox as a zero-compromise alternative: a comprehensive suite of high-performance tabular utilities that operate entirely within your local web browser.
     </p>
 
     <h2>Our Core Principle: Zero-Upload Privacy</h2>
     <p>
-      Traditional online converter tools force you to upload your sensitive spreadsheets to remote cloud servers. This exposes confidential financial data, customer PII, and medical records to security breaches, compliance violations (GDPR/HIPAA), and slow upload bottlenecks.
+      Traditional online converters force users to transmit files across the public internet to third-party servers. This model introduces critical security risks: your data can be intercepted, cached on remote disks, logged in plaintext server queues, or exposed to compliance violations under GDPR, HIPAA, and CCPA frameworks.
     </p>
     <p>
-      <strong>CSV Toolbox solves this by executing 100% of data processing directly inside your web browser.</strong> Using HTML5 Web Workers, modern stream readers (<code>FileReader</code> API), and client-side memory chunking, your files never leave your device. When you close the browser tab, your data vanishes completely from memory.
-    </p>
-
-    <h2>The Technology Stack</h2>
-    <p>
-      Every tool on CSV Toolbox is engineered for maximum speed, low resource consumption, and reliability:
+      <strong>CSV Toolbox eliminates the server entirely.</strong> When you select a CSV file on our site, your data is processed 100% locally on your machine's CPU:
     </p>
     <ul>
-      <li><strong>Astro 5 SSG:</strong> Server-first static HTML compilation ensuring near-instant page load times (LCP &lt; 0.8s) and zero runtime JavaScript bloat.</li>
-      <li><strong>HTML5 Web Workers:</strong> Heavy parsing algorithms run on isolated background CPU threads, preventing your browser tab or UI from freezing even on 500MB+ datasets.</li>
-      <li><strong>Streaming PapaParse &amp; JSZip:</strong> Battle-tested, memory-optimized open-source libraries for streaming delimiter detection, row chunking, and multi-file archive generation.</li>
-      <li><strong>Cloudflare Edge Network:</strong> Hosted globally across Cloudflare's serverless edge with Full Strict SSL encryption and Brotli compression.</li>
+      <li><strong>No Server Uploads:</strong> Files are never transmitted over HTTP/HTTPS to any backend server or cloud bucket.</li>
+      <li><strong>No Remote Storage:</strong> There is no backend database, no S3 object storage, and no server-side cache.</li>
+      <li><strong>Ephemeral Memory:</strong> All computations reside in temporary browser memory. When you close or refresh the browser tab, your data is instantly and permanently cleared from RAM.</li>
     </ul>
 
-    <h2>Open Source &amp; Community Backed</h2>
+    <h2>How the Technology Works Under the Hood</h2>
     <p>
-      We believe data privacy requires transparency. The complete source code for CSV Toolbox is publicly auditable on our <a href="https://github.com/Dx1100/csv-toolbox" target="_blank" rel="noopener noreferrer">GitHub repository</a>. You can inspect every line of parser logic to verify that zero external network requests are made with your file data.
+      Handling multi-hundred-megabyte spreadsheets inside a web browser requires careful systems programming:
     </p>
+    <ul>
+      <li><strong>HTML5 FileReader &amp; Stream Slicing:</strong> Large files are ingested in discrete byte blocks using native browser memory slicing, avoiding browser heap exhaustion.</li>
+      <li><strong>Background Web Worker Isolates:</strong> Heavy computational parsing runs on dedicated background CPU threads via HTML5 Web Workers (<code>/workers/csv-worker.js</code>). This ensures your browser interface remains buttery smooth at 60 FPS, even while crunching millions of rows.</li>
+      <li><strong>Optimized PapaParse &amp; JSZip Engine:</strong> Delimiter detection, RFC 4180 quotation handling, and ZIP archive generation are handled by battle-tested, streaming open-source libraries optimized for raw speed.</li>
+      <li><strong>Astro 5 Static Compilation:</strong> Our frontend is compiled to pure, static HTML/CSS with minimal overhead, delivering sub-second First Contentful Paint (FCP) and zero Cumulative Layout Shift (CLS).</li>
+    </ul>
 
-    <h2>Support &amp; Feedback</h2>
+    <h2>Editorial &amp; Technical Accuracy Standards</h2>
     <p>
-      CSV Toolbox is supported by non-intrusive advertising, which keeps every utility 100% free with no signups, no subscriptions, and no file size paywalls. Have a feature request or need a new delimiter tool? <a href="/contact/">Get in touch with us</a> or open an issue on GitHub.
+      Every tutorial, developer script, and troubleshooting guide published in our <a href="/guides/">Knowledge Base</a> adheres to rigorous editorial testing:
+    </p>
+    <ul>
+      <li><strong>Empirical Code Verification:</strong> All Python/Pandas scripts, Bash command-line recipes, and PowerShell snippets are executed and tested against Python 3.11+, GNU coreutils, and modern terminal environments before publication.</li>
+      <li><strong>RFC 4180 Compliance:</strong> We verify all parsing scenarios against the official IETF RFC 4180 specification for CSV files, ensuring reliable handling of escaped quotes, carriage returns (CRLF), and non-standard delimiters.</li>
+      <li><strong>Independent &amp; Free:</strong> Our software is free to use without paywalls, email gates, or tier limits, supported by non-intrusive advertising.</li>
+    </ul>
+
+    <h2>Open Source Transparency &amp; Contact</h2>
+    <p>
+      We believe true privacy requires public accountability. The complete source code for CSV Toolbox is open and publicly verifiable on our <a href="https://github.com/Dx1100/csv-toolbox" target="_blank" rel="noopener noreferrer">GitHub repository</a>. You can inspect every line of parser logic to verify that zero external network calls are made with your file data.
+    </p>
+    <p>
+      Have suggestions, spotted a bug, or need a custom delimiter format? Reach out directly via our <a href="/contact/">Contact page</a> or email us at <a href="mailto:freecsvtoolbox@gmail.com">freecsvtoolbox@gmail.com</a>.
     </p>
   </div>
 </Base>

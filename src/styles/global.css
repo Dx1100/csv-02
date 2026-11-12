@@ -435,9 +435,41 @@ main { min-height: 60vh; }
 .steps li { position: relative; padding-left: 2.4rem; margin-bottom: 0.8rem; }
 .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0.1rem; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; }
 
-/* Ads */
-.ad-slot { margin: 2rem auto; min-height: 90px; max-width: 728px; border: 1px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--bg-soft); }
-.ad-placeholder { color: #cbd5e1; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; }
+/* Ads - CLS & Confirmed Clicks Protection */
+.ad-slot {
+  margin: 2.5rem auto;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-soft);
+  contain: content;
+  overflow: hidden;
+}
+.ad-slot-horizontal {
+  min-height: 90px;
+  max-width: 728px;
+  width: 100%;
+}
+.ad-slot-rectangle {
+  min-height: 250px;
+  max-width: 336px;
+  width: 100%;
+}
+.ad-slot-auto {
+  min-height: 100px;
+  max-width: 100%;
+  width: 100%;
+}
+.ad-placeholder {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+  user-select: none;
+}
 
 /* Guides */
 .guide { padding-top: 2rem; max-width: 760px; }
