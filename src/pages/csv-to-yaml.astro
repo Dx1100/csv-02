@@ -68,9 +68,9 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How the conversion works</h2>
+    <h2>How the Bidirectional Conversion Works (Step-by-Step Guide)</h2>
     
     <h3>Direction 1: Converting CSV to YAML</h3>
     <ol class="steps">
@@ -88,15 +88,59 @@ const schema = [
       <li><strong>Download your CSV:</strong> Save the converted file as a clean <code>.csv</code> spreadsheet for Excel, Google Sheets, or data pipelines.</li>
     </ol>
 
-    <h2>Why choose our browser-based YAML converter?</h2>
+    <h2>Why Spreadsheets Fail with DevOps &amp; Configuration YAML</h2>
+    <p>
+      Modern infrastructure tools (Kubernetes, Ansible, GitHub Actions, Docker Compose) depend entirely on strict whitespace-delimited YAML formatting. Traditional spreadsheets cannot interact with YAML natively:
+    </p>
     <ul>
-      <li><strong>Full Two-Way Conversion:</strong> Effortlessly switch back and forth between tabular CSV spreadsheets and structured YAML configuration documents.</li>
-      <li><strong>Robust Quote &amp; Syntax Escaping:</strong> Strings containing colons, curly braces, hyphens, or newlines are quoted accurately according to YAML 1.2 rules.</li>
-      <li><strong>DevOps &amp; Config Ready:</strong> Perfect for transforming spreadsheets into Kubernetes config maps, Helm values, Docker Compose files, or database seeds.</li>
-      <li><strong>100% Client-Side Privacy:</strong> No files or values are sent to external servers. Your configuration credentials, records, and tables stay private.</li>
+      <li><strong>Whitespace Indentation Sensitivity:</strong> YAML uses exact 2-space indentation to define data hierarchy. Tabs and improper alignment cause immediate syntax parser crashes (<code>mapping values are not allowed here</code>). Desktop spreadsheet tools do not respect or export hierarchical indentation.</li>
+      <li><strong>Colon and Type Ambiguities:</strong> Values containing colons (like URLs <code>https://api.com</code>, timestamps, or IP addresses) must be explicitly quoted in YAML to avoid being evaluated as unquoted dictionary keys. CSV Toolbox safely wraps special characters in compliant double quotes.</li>
+      <li><strong>Boolean and Reserved Keyword Traps:</strong> Unquoted words like <code>yes</code>, <code>no</code>, <code>on</code>, <code>off</code>, <code>true</code>, and <code>false</code> are coerced into boolean flags under YAML 1.1 specs. Our tool handles string quoting reliably.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      Engineers automate conversions between CSV and YAML using Python:
+    </p>
+
+    <h3>1. Python (CSV to Clean YAML List)</h3>
+    <pre><code>import csv
+import yaml
+
+# Ingest CSV records and serialize to YAML
+with open("servers.csv", "r", encoding="utf-8") as f:
+    records = list(csv.DictReader(f))
+
+with open("servers.yaml", "w", encoding="utf-8") as f:
+    yaml.dump(records, f, sort_keys=False, default_flow_style=False)
+
+print("Generated structured YAML configuration.")</code></pre>
+
+    <h3>2. Python (YAML Array to Standard CSV)</h3>
+    <pre><code>import csv
+import yaml
+
+with open("config.yaml", "r", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+
+if isinstance(data, list) and len(data) &gt; 0:
+    keys = data[0].keys()
+    with open("config.csv", "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=keys)
+        writer.writeheader()
+        writer.writerows(data)</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Formatting Tips</h2>
+    <p>
+      When transforming configurations between tabular and YAML representations:
+    </p>
+    <ul>
+      <li><strong>Multi-Document YAML Files:</strong> If your YAML file contains multiple documents separated by <code>---</code>, our parser extracts the primary list structure cleanly.</li>
+      <li><strong>Preserving Numbers as Strings:</strong> Numerical configuration values (such as port numbers or version strings like <code>1.0</code>) are safely quoted to prevent floating-point truncation.</li>
+      <li><strong>JSON Alternative:</strong> Need standard web JSON instead of indentation-based YAML? Try our <a href="/csv-to-json/">CSV to JSON Converter</a>.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>

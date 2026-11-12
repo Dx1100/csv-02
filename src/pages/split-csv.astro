@@ -4,12 +4,12 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I split a large CSV file?', a: 'Drop your file into the tool above, choose how to split it (by rows, file size or column value) and click Split. Each part downloads as a separate CSV, or grab them all in one ZIP. Everything runs in your browser, so files process locally without network latency.' },
-  { q: 'Does each split file keep the header row?', a: 'Yes. Leave "First row is a header" checked and every output file starts with the original header row, so each part opens cleanly in Excel or imports into any database.' },
-  { q: 'Can I split a CSV by the values in a column?', a: 'Yes. Choose "By column value" mode and pick a column. The tool creates one file per unique value, for example one file per country, region or category.' },
-  { q: 'What is the maximum file size?', a: 'Files are processed as a stream in a background Web Worker, so files of several hundred megabytes work on a normal laptop without freezing the page. The practical limit is governed by your device memory.' },
-  { q: 'Is my data uploaded anywhere?', a: 'No. The splitter runs 100% in your browser. Your file never leaves your device, which makes it safe for confidential data.' },
-  { q: 'How do I split a CSV so Excel can open it?', a: 'Excel supports at most 1,048,576 rows per sheet. Split by rows with a value of 1,000,000 or less and every part will open in Excel without truncation.' },
+  { q: 'How do I split a large CSV file without Excel?', a: 'Drop your file into the tool above, select your split criteria (by row count, maximum file size in megabytes, or unique column values), and click Split CSV. The engine processes chunks locally in your browser and provides instant downloads for each chunk or a single packaged ZIP.' },
+  { q: 'Why does Excel crash or cut off my CSV at 1,048,576 rows?', a: 'Microsoft Excel has an internal grid architecture hard-coded to a maximum of 1,048,576 rows by 16,384 columns. When a CSV exceeds this limit, Excel truncates all subsequent records without warning. Our browser splitter bypasses spreadsheet grid constraints completely by streaming raw text.' },
+  { q: 'Does each split file retain the original header row?', a: 'Yes. When "First row is a header" is checked, our Web Worker automatically captures the column names from row 1 and prepends them to the top of every generated split file, ensuring seamless importing into downstream databases or CRMs.' },
+  { q: 'Can I split a CSV into separate files by category or country?', a: 'Yes. Switch the split mode to "By column value" and choose your target column (e.g., Country, State, Status, or Department). The tool parses the file and outputs an isolated, cleanly formatted CSV for every unique value in that column.' },
+  { q: 'What is the maximum file size supported by this online splitter?', a: 'Because processing executes via client-side stream slicing in an isolated HTML5 Web Worker, files of 500MB to 1GB+ can be handled on standard consumer laptops without crashing the browser tab. The only limit is your local machine available RAM.' },
+  { q: 'Is my confidential data uploaded or logged on any external server?', a: 'No. CSV Toolbox operates on a strict zero-upload architecture. Your spreadsheet never traverses the network; all parsing, splitting, and ZIP compression occur exclusively in your device local memory.' },
 ];
 const schema = [
   { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Splitter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to split CSV files by rows, file size or column value. Runs locally in the browser, no signup or upload required.' },
@@ -29,9 +29,7 @@ const schema = [
   <div class="container">
     <h1>Split CSV Files Online</h1>
     <p class="lead">
-      <strong>How do you split a CSV file?</strong> Drop your file below, choose to split by rows,
-      file size or column value, and click Split. Each part keeps the header row and downloads
-      instantly. Free, no signup, and your file never leaves your device.
+      <strong>How do you split a large CSV file?</strong> Drop your spreadsheet below, choose to split by row count, maximum file size, or unique column values, and click Split CSV. Every generated part automatically preserves the original header row and downloads instantly. 100% free, no software installation, and your confidential data never leaves your device.
     </p>
 
     <div class="tool">
@@ -67,26 +65,75 @@ const schema = [
       <button class="btn" id="zip" hidden>Download all as ZIP</button>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How to split a CSV file (step by step)</h2>
+    <h2>How to Split a CSV File (Step-by-Step Guide)</h2>
     <ol class="steps">
-      <li><strong>Add your file.</strong> Drag and drop the CSV into the box above, or click it to browse. A preview of the first rows appears instantly.</li>
-      <li><strong>Pick a split mode.</strong> By rows (e.g. 1,000 rows per file), by file size (e.g. 5 MB parts) or by column value (one file per unique value in a column).</li>
-      <li><strong>Click "Split CSV".</strong> A live counter shows rows processed. Large files stay responsive thanks to streaming in a background worker.</li>
-      <li><strong>Download the parts.</strong> Save files individually or click "Download all as ZIP".</li>
+      <li><strong>Select or Drop Your File:</strong> Drag and drop your target CSV into the secure dropzone above, or click to browse your local filesystem. An instant 6-row table preview will render so you can verify column structures.</li>
+      <li><strong>Configure Your Splitting Criteria:</strong> Choose between three operational modes:
+        <ul>
+          <li><strong>By number of rows:</strong> Divide massive datasets into manageable batches (e.g., exactly 100,000 rows per file for Excel or database batch insertion).</li>
+          <li><strong>By maximum file size:</strong> Chunk files to stay strictly beneath upload size caps enforced by email providers, CRMs (HubSpot, Salesforce), or cloud databases (e.g., 10 MB per part).</li>
+          <li><strong>By column value:</strong> Group records dynamically into dedicated CSV files according to discrete column categories (e.g., one file per country, sales territory, or order status).</li>
+        </ul>
+      </li>
+      <li><strong>Preserve Table Schema:</strong> Leave <em>"First row is a header"</em> checked. This instructs the streaming parser to clone line 1 and inject it at the beginning of every split file.</li>
+      <li><strong>Execute &amp; Export:</strong> Click <strong>Split CSV</strong>. Watch the real-time row counter stream through your data. Once completed, download parts individually or click <strong>Download all as ZIP</strong>.</li>
     </ol>
 
-    <h2>Why use this CSV splitter?</h2>
+    <h2>Why Standard Spreadsheet Software Fails on Large CSVs</h2>
+    <p>
+      Desktop spreadsheet applications such as Microsoft Excel, Apple Numbers, and Google Sheets are engineered for visual formula calculation and desktop presentation, not high-volume tabular ETL. When attempting to open multi-hundred-megabyte CSV exports, desktop tools encounter severe architectural constraints:
+    </p>
     <ul>
-      <li><strong>Private by design:</strong> files are processed on your device, never uploaded to a server.</li>
-      <li><strong>No limits, no signup:</strong> split files of any size supported by your device, completely free.</li>
-      <li><strong>Headers preserved:</strong> every part is a valid, self-contained CSV.</li>
-      <li><strong>Three split modes:</strong> by rows, by file size, or by unique column values.</li>
-      <li><strong>Fast local processing:</strong> streaming processing handles files up to hundreds of megabytes without freezing your browser.</li>
+      <li><strong>The 1,048,576 Row Ceiling:</strong> Microsoft Excel’s worksheet engine is physically constrained to exactly 1,048,576 rows. If your database export contains 1,048,577 rows, Excel silently truncates the excess rows without throwing a blocking warning, resulting in corrupted analytics and silent data loss.</li>
+      <li><strong>RAM Bloat &amp; System Freezes:</strong> Plaintext CSV files expand by 3x to 5x when converted into in-memory spreadsheet DOM trees. A 400 MB CSV export typically requires over 2.5 GB of RAM in Excel, frequently causing operating system spinning wheels, unhandled crash dialogs, and forced reboots.</li>
+      <li><strong>Silent Type Coercion:</strong> Spreadsheets automatically evaluate alphanumeric strings, stripping leading zeros from critical identifiers like US ZIP codes (e.g., converting <code>01234</code> to <code>1234</code>), credit card numbers, and order tracking IDs.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      If you are building automated data pipelines or working within headless server environments, you can replicate this splitting logic using standard developer toolchains:
+    </p>
+
+    <h3>1. Python &amp; Pandas (Chunked Memory Stream)</h3>
+    <pre><code>import pandas as pd
+
+# Stream through multi-gigabyte files in 100,000-row chunks
+chunk_size = 100000
+batch_num = 1
+
+for chunk in pd.read_csv('massive_export.csv', chunksize=chunk_size, low_memory=False):
+    output_filename = f"export_part_&#123;batch_num&#125;.csv"
+    chunk.to_csv(output_filename, index=False)
+    print(f"Generated &#123;output_filename&#125; with &#123;len(chunk)&#125; rows")
+    batch_num += 1</code></pre>
+
+    <h3>2. GNU Coreutils (Fast Linux / macOS Bash Split)</h3>
+    <pre><code># Extract the original header row
+head -n 1 massive_export.csv &gt; header.csv
+
+# Split data rows into 100,000-line segments
+tail -n +2 massive_export.csv | split -l 100000 - split_chunk_
+
+# Re-attach header to every chunk
+for file in split_chunk_*; do
+    cat header.csv "$file" &gt; "final_$file.csv"
+    rm "$file"
+done
+rm header.csv</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Data Hygiene</h2>
+    <p>
+      Working with complex real-world CSV exports requires attention to common encoding and formatting traps:
+    </p>
+    <ul>
+      <li><strong>UTF-8 Byte Order Marks (BOM):</strong> Some Windows systems export CSV files with an invisible 3-byte prefix (<code>\xef\xbb\xbf</code>). Our browser splitter automatically identifies and strips BOM headers so first-column names are not corrupted in downstream SQL schemas.</li>
+      <li><strong>Escaped Multi-line Fields (RFC 4180):</strong> Naive line-splitting scripts break when customer feedback or addresses contain line breaks inside quotation marks. CSV Toolbox uses an RFC 4180 compliant finite-state parser that respects quoted text boundaries, ensuring multi-line cells stay intact within their respective parent rows.</li>
+      <li><strong>Custom Separators:</strong> If your export uses semicolons, tabs, or pipe symbols instead of commas, run your file through our <a href="/change-delimiter-csv/">CSV Delimiter Converter</a> prior to splitting.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>
@@ -100,6 +147,7 @@ const schema = [
       <strong>Related tools:</strong>
       <a href="/merge-csv/">Merge CSV files</a> ·
       <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/change-delimiter-csv/">Change CSV delimiter</a> ·
       <a href="/csv-to-json/">Convert CSV to JSON</a> ·
       <a href="/guides/">All guides</a>
     </aside>

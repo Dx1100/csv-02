@@ -67,15 +67,15 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How the conversion works</h2>
+    <h2>How the Bidirectional Conversion Works (Step-by-Step Guide)</h2>
     
     <h3>Direction 1: Converting CSV to XML</h3>
     <ol class="steps">
       <li><strong>Select "CSV → XML":</strong> Choose this option from the direction bar above.</li>
       <li><strong>Upload your CSV file:</strong> Drag and drop your <code>.csv</code> or <code>.tsv</code> file into the box to view a column preview.</li>
-      <li><strong>Generate XML structure:</strong> Click Convert. Column headers are converted into custom XML element tags, rows are enclosed in <code>&lt;row&gt;</code> elements inside a <code>&lt;root&gt;</code> container, and special characters are entity-escaped.</li>
+      <li><strong>Generate XML structure:</strong> Click Convert. Column headers are sanitized into valid XML element tags, rows are enclosed in <code>&lt;row&gt;</code> elements inside a <code>&lt;root&gt;</code> container, and special characters are entity-escaped.</li>
       <li><strong>Download your XML file:</strong> Save the resulting <code>.xml</code> document directly to your computer.</li>
     </ol>
 
@@ -87,15 +87,71 @@ const schema = [
       <li><strong>Download your CSV:</strong> Save the extracted file as a clean <code>.csv</code> spreadsheet for Microsoft Excel, Google Sheets, or database imports.</li>
     </ol>
 
-    <h2>Why use our local CSV ⇄ XML Converter?</h2>
+    <h2>Why Spreadsheet Software Fails with XML Feeds</h2>
+    <p>
+      XML remains the backbone of enterprise supply chains, financial systems, government filings, and healthcare feeds. Moving data between spreadsheets and XML feeds presents major technical bottlenecks:
+    </p>
     <ul>
-      <li><strong>True Bidirectional Utility:</strong> Easily switch back and forth between tabular spreadsheets and hierarchical XML feeds in one tool.</li>
-      <li><strong>Smart Schema Detection:</strong> Automatically scans all XML records to discover attributes and child tags, ensuring no fields are dropped or shifted.</li>
-      <li><strong>Compliant Entity Handling:</strong> Automatically escapes and decodes reserved XML characters (<code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>, quotes) so documents stay well-formed.</li>
-      <li><strong>100% Private &amp; Local:</strong> No files or records are sent across the web. Ideal for sensitive client records, financials, and private business data.</li>
+      <li><strong>Strict Tag Naming Rules:</strong> In a CSV spreadsheet, column headers frequently contain spaces (<code>Total Spend</code>) or special characters (<code>Price ($)</code>). In XML, element tag names cannot contain spaces, slashes, or parentheses. Naive converters generate fatal syntax errors; CSV Toolbox automatically sanitizes headers into valid tags like <code>&lt;Total_Spend&gt;</code>.</li>
+      <li><strong>Entity Escaping Violations:</strong> In XML, the ampersand (<code>&amp;</code>) and angle brackets (<code>&lt;</code>, <code>&gt;</code>) are reserved syntax tokens. If a customer note contains <code>"Sales &amp; Marketing"</code>, an unescaped export triggers fatal XML document parser crashes (<code>XML Parsing Error: not well-formed</code>).</li>
+      <li><strong>Schema Mapping Failures:</strong> Spreadsheets cannot handle XML attributes (e.g. <code>&lt;record id="101" status="active"&gt;</code>) without dedicated XSLT transformation scripts. Our parser extracts both attributes and child tags into clean, distinct spreadsheet columns.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      Data engineers automate CSV and XML processing using Python:
+    </p>
+
+    <h3>1. Python (CSV to Well-Formed XML Document)</h3>
+    <pre><code>import csv
+import xml.etree.ElementTree as ET
+
+root = ET.Element("dataset")
+
+with open("source_data.csv", "r", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        item = ET.SubElement(root, "record")
+        for key, val in row.items():
+            tag_name = key.strip().replace(" ", "_")
+            child = ET.SubElement(item, tag_name)
+            child.text = val
+
+tree = ET.ElementTree(root)
+tree.write("output.xml", encoding="utf-8", xml_declaration=True)
+print("Generated valid XML document.")</code></pre>
+
+    <h3>2. Python (Extract Repeating XML Records to CSV)</h3>
+    <pre><code>import csv
+import xml.etree.ElementTree as ET
+
+tree = ET.parse("feed.xml")
+root = tree.getroot()
+
+records = []
+all_keys = set()
+
+for elem in root:
+    row = &#123;child.tag: child.text for child in elem&#125;
+    all_keys.update(row.keys())
+    records.append(row)
+
+with open("extracted.csv", "w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=sorted(list(all_keys)))
+    writer.writeheader()
+    writer.writerows(records)</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Formatting Tips</h2>
+    <p>
+      Ensure valid XML schema compliance with these guidelines:
+    </p>
+    <ul>
+      <li><strong>XML Declaration:</strong> All generated XML outputs include the standard header <code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</code> for immediate import into ERP and SOAP systems.</li>
+      <li><strong>Handling Blank Fields:</strong> Missing CSV values generate self-closing XML tags (<code>&lt;Notes /&gt;</code>) to conserve bandwidth.</li>
+      <li><strong>JSON or YAML Alternative:</strong> Working with modern REST APIs or cloud configurations instead of XML? Try our <a href="/csv-to-json/">CSV to JSON Converter</a> or <a href="/csv-to-yaml/">CSV to YAML Converter</a>.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>

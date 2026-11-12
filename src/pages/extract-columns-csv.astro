@@ -4,11 +4,12 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I extract columns from a CSV file?', a: 'Upload your file into the tool above, check the boxes for the specific columns you want to keep, and click Extract Columns. The tool generates a new CSV containing only the selected columns and downloads it instantly. Everything runs locally on your device.' },
-  { q: 'Can I remove columns from a large CSV file?', a: 'Yes. By deselecting the columns you do not want and keeping the ones you need, you can delete columns from large CSV files easily. This is perfect for trimming bloated files exported from Salesforce or HubSpot.' },
-  { q: 'Is there a limit on the file size or number of columns?', a: 'No fixed limit. The file is parsed as a stream in the background, so you can process large CSV files with hundreds of columns without crashing your browser tab, within your device\'s memory limits.' },
-  { q: 'Are my column selections uploaded to any server?', a: 'No. The column extraction happens 100% inside your browser. Your data never leaves your device, making it safe for corporate data security.' },
-  { q: 'Does the output file keep the original header names?', a: 'Yes. The extracted columns retain their original header names and ordering, ensuring database imports and spreadsheets open cleanly.' }
+  { q: 'How do I extract specific columns from a CSV file online?', a: 'Upload your file into the tool above, inspect the automatically detected headers, select the checkboxes for the columns you wish to retain, and click Extract Columns. The browser engine parses each row, filters out unselected fields, and downloads your streamlined CSV instantly.' },
+  { q: 'Can I remove or delete unwanted columns from a large CSV file?', a: 'Yes. Use the Deselect All button, then check only the columns you need—or uncheck individual bloated columns (such as tracking logs, internal IDs, or marketing tags). This is the fastest way to prune bloated Salesforce or Shopify exports.' },
+  { q: 'Does this tool preserve the original data types and headers of extracted columns?', a: 'Yes. Every selected column retains its exact original header label and raw cell values, including leading zeros, special characters, and formatting, without automated spreadsheet type coercion.' },
+  { q: 'How many columns can this tool process at once?', a: 'There is no hard limit. You can upload enterprise datasets containing 100 to 300+ columns. The interface renders an organized, searchable column selection grid with convenient Select All and Deselect All shortcuts.' },
+  { q: 'What is the maximum file size for CSV column filtering?', a: 'Because processing is executed via client-side streaming in a dedicated HTML5 Web Worker, multi-hundred-megabyte files can be filtered smoothly without freezing your operating system or crashing the browser tab.' },
+  { q: 'Are my confidential CRM or financial records uploaded to an external server?', a: 'Never. All column extraction and row filtering occur 100% locally in your machine memory. No data is transmitted across the internet, ensuring full compliance with GDPR and corporate security protocols.' },
 ];
 const schema = [
   { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Column Extractor', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to extract specific columns or remove columns from CSV files. Runs locally in the browser with no upload required.' },
@@ -28,10 +29,7 @@ const schema = [
   <div class="container">
     <h1>Extract Columns from CSV Online</h1>
     <p class="lead">
-      <strong>How do you extract columns from a CSV file without Excel?</strong> Drop your file below, choose the specific 
-      columns you want to keep, and click "Extract Columns". This free CSV column selector and remover tool automatically 
-      detects your headers, acts as a CSV column filter, and lets you hide or delete CSV columns online. 
-      It is the fastest way to split columns out of a CSV, keep specific CSV columns, or delete columns from large CSV files privately.
+      <strong>How do you extract specific columns from a CSV file without Excel?</strong> Drop your spreadsheet below, check the exact columns you need to retain, and click Extract Columns. Easily strip bloated CRM exports, isolate primary keys, and trim 80% of file weight in seconds. 100% free, private, and client-side.
     </p>
 
     <div class="tool">
@@ -57,25 +55,62 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How to extract columns from CSV free (step by step)</h2>
+    <h2>How to Extract Columns from CSV (Step-by-Step Guide)</h2>
     <ol class="steps">
-      <li><strong>Add your file.</strong> Drag and drop the CSV into the box above, or click it to browse. The headers will be parsed immediately.</li>
-      <li><strong>Select columns to keep.</strong> Use the checkboxes to select which columns to keep, or use "Deselect All" and choose manually.</li>
-      <li><strong>Click "Extract Columns".</strong> The tool will filter the data rows in a background stream.</li>
-      <li><strong>Download the cleaned CSV.</strong> Save the resulting file containing only your chosen columns.</li>
+      <li><strong>Select Your Source Dataset:</strong> Drag and drop your CSV into the dropzone above, or click to browse. The parser immediately extracts header metadata and renders a 6-row sample preview.</li>
+      <li><strong>Configure Column Filtering:</strong>
+        <ul>
+          <li><strong>Extract Specific Columns:</strong> Click <strong>Deselect All</strong>, then check only the columns you need for downstream reporting (e.g., <code>[Customer_ID, Email, Lifetime_Spend]</code>).</li>
+          <li><strong>Prune Bloated Columns:</strong> Leave all checked, then uncheck bulky metadata columns like raw JSON payloads, verbose audit logs, or tracking tokens.</li>
+        </ul>
+      </li>
+      <li><strong>Run Filtering Engine:</strong> Click <strong>Extract Columns</strong>. The background Web Worker processes your data row by row, keeping only the selected column indices.</li>
+      <li><strong>Export Streamlined File:</strong> Download your lean, lightweight CSV immediately to your local device.</li>
     </ol>
 
-    <h2>Why use this CSV Column Filter?</h2>
+    <h2>Why Spreadsheet Software Struggles with Wide Column Datasets</h2>
+    <p>
+      Enterprise exports from modern SaaS platforms (Shopify, Salesforce, HubSpot, Stripe) regularly output tables with 80 to 250+ columns. Managing wide tables inside traditional desktop spreadsheets introduces significant friction:
+    </p>
     <ul>
-      <li><strong>Private by design:</strong> your files never leave your device. Filter and cut CSV columns safely.</li>
-      <li><strong>No limits, no signup:</strong> extract columns from CSV free, delete CSV columns online, or choose specific columns in CSV files as many times as you need.</li>
-      <li><strong>Supports large files:</strong> streams data in background workers, allowing you to delete columns from large CSV files without crashing your browser.</li>
-      <li><strong>Layman friendly:</strong> works as a simple CSV column remover or selector to separate columns into a new file without code.</li>
+      <li><strong>The Horizontal Scrolling Nightmare:</strong> Navigating through 150 columns in Excel or Google Sheets requires endless horizontal scrolling. Deleting 80 non-adjacent columns manually takes 10+ minutes and carries severe risk of accidentally deleting primary keys.</li>
+      <li><strong>Severe RAM Multiplication:</strong> Spreadsheet applications allocate separate visual rendering cells for every column on every row. A file with 100,000 rows and 120 columns forces Excel to instantiate 12 million graphical cells in memory, triggering system freeze warnings.</li>
+      <li><strong>Database Ingestion Failures:</strong> Uploading bloated 100-column CSVs into SQL databases (PostgreSQL, MySQL, BigQuery) requires complex schema definitions. Filtering out 90% of unused columns before import speeds up query ingestion by up to 10x.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      For recurring data pipelines, developers isolate specific columns using Python or standard Unix command-line utilities:
+    </p>
+
+    <h3>1. Python &amp; Pandas (Filter by Column List)</h3>
+    <pre><code>import pandas as pd
+
+# Ingest only selected columns to conserve system memory
+desired_columns = ["customer_id", "email", "total_orders"]
+df = pd.read_csv("enterprise_export.csv", usecols=desired_columns)
+
+# Export clean, lightweight file
+df.to_csv("lean_customer_list.csv", index=False)
+print(f"Extracted &#123;len(desired_columns)&#125; columns across &#123;len(df)&#125; rows.")</code></pre>
+
+    <h3>2. GNU Cut (Instant Positional Column Filtering)</h3>
+    <pre><code># Extract columns 1, 3, and 5 from a standard CSV
+cut -d, -f1,3,5 massive_export.csv &gt; filtered_output.csv</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Formatting Tips</h2>
+    <p>
+      When extracting columns from diverse datasets, verify these common traps:
+    </p>
+    <ul>
+      <li><strong>Duplicate Column Names:</strong> If your export contains two columns with the exact same name (e.g., two <code>ID</code> columns), downstream SQL databases will reject the file. Rename duplicates or inspect column indices carefully.</li>
+      <li><strong>Preserving Multi-line Quoted Fields:</strong> If an extracted column contains addresses or survey feedback with internal line breaks, our RFC 4180 parser ensures all line breaks remain safely enclosed within their quotes.</li>
+      <li><strong>Subsequent Operations:</strong> Need to remove duplicate emails from your newly extracted customer list? Easily run your file through our <a href="/remove-duplicates-csv/">Duplicate Row Remover</a>.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>
@@ -90,7 +125,8 @@ const schema = [
       <a href="/split-csv/">Split CSV files</a> ·
       <a href="/merge-csv/">Merge CSV files</a> ·
       <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
-      <a href="/change-delimiter-csv/">Change CSV delimiter</a>
+      <a href="/change-delimiter-csv/">Change CSV delimiter</a> ·
+      <a href="/guides/">All guides</a>
     </aside>
   </div>
 

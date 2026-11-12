@@ -68,35 +68,80 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How the conversion works</h2>
+    <h2>How the Bidirectional Conversion Works (Step-by-Step Guide)</h2>
     
     <h3>Direction 1: Converting CSV to HTML Table</h3>
     <ol class="steps">
-      <li><strong>Select "CSV → HTML":</strong> Choose this option from the direction dropdown above.</li>
-      <li><strong>Add your CSV file:</strong> Drag and drop your <code>.csv</code> or <code>.tsv</code> file into the box to view a table preview.</li>
-      <li><strong>Generate semantic markup:</strong> Click Convert. The converter treats the first line as table headers (<code>&lt;th&gt;</code>) within <code>&lt;thead&gt;</code> and all subsequent rows as table data cells (<code>&lt;td&gt;</code>) inside <code>&lt;tbody&gt;</code>, escaping special characters to valid HTML entities.</li>
+      <li><strong>Select "CSV → HTML":</strong> Choose this option from the direction controls above.</li>
+      <li><strong>Add your CSV file:</strong> Drag and drop your <code>.csv</code> or <code>.tsv</code> file into the box to view an instant table preview.</li>
+      <li><strong>Generate semantic markup:</strong> Click Convert. The converter treats the first line as table headers (<code>&lt;th&gt;</code>) within <code>&lt;thead&gt;</code> and all subsequent rows as table data cells (<code>&lt;td&gt;</code>) inside <code>&lt;tbody&gt;</code>, escaping special characters into valid HTML entities.</li>
       <li><strong>Download your HTML:</strong> Save the output as a <code>.html</code> file or copy the table snippet into your web project or CMS editor.</li>
     </ol>
 
     <h3>Direction 2: Converting HTML Table to CSV</h3>
     <ol class="steps">
-      <li><strong>Select "HTML → CSV":</strong> Switch the direction dropdown to enable HTML table extraction.</li>
+      <li><strong>Select "HTML → CSV":</strong> Switch the direction toggle to enable HTML table extraction.</li>
       <li><strong>Upload your HTML document:</strong> Drop your <code>.html</code>, <code>.htm</code>, or <code>.txt</code> file containing a web table.</li>
-      <li><strong>Extract spreadsheet data:</strong> Click Convert. The parser uses the browser DOM to locate the table, extract text contents from headers and rows, strip inner tags, clean whitespace, and compile the data into CSV format.</li>
+      <li><strong>Extract spreadsheet data:</strong> Click Convert. The parser uses the browser DOM to locate the table, extract text contents from headers and rows, strip inner tags, clean whitespace, and compile the data into standard CSV format.</li>
       <li><strong>Download your CSV:</strong> Save the extracted file as a clean <code>.csv</code> ready for Microsoft Excel, Google Sheets, or data analysis tools.</li>
     </ol>
 
-    <h2>Why use our offline HTML table generator?</h2>
+    <h2>Why Excel's Native "Save as HTML" Fails</h2>
+    <p>
+      Exporting HTML tables directly from desktop spreadsheet software like Microsoft Excel generates notoriously bloated, unusable web code:
+    </p>
     <ul>
-      <li><strong>Two-Way Bidirectional Utility:</strong> Generate clean HTML table snippets from spreadsheets, or scrape web tables directly into standard CSV files.</li>
-      <li><strong>Clean &amp; Semantic HTML:</strong> Generates standards-compliant <code>&lt;table&gt;</code> markup with proper <code>&lt;thead&gt;</code> and <code>&lt;tbody&gt;</code> divisions and zero inline style bloat.</li>
-      <li><strong>Automatic Entity Escaping:</strong> Safely handles special characters like <code>&amp;</code>, <code>&lt;</code>, and <code>&gt;</code> so your code renders without layout breaks.</li>
-      <li><strong>100% Private &amp; Secure:</strong> Runs entirely in your local browser environment with zero network transmission.</li>
+      <li><strong>Proprietary Microsoft XML Bloat:</strong> When Excel exports to HTML, it injects hundreds of lines of deprecated Office XML tags (<code>&lt;o:OfficeDocumentSettings&gt;</code>, <code>&lt;x:ExcelWorkbook&gt;</code>) and hardcoded inline styles. A simple 15-row table can balloon to over 300KB of dirty code that destroys web page load speeds.</li>
+      <li><strong>Unescaped Entity Vulnerabilities:</strong> Raw cell values containing ampersands (<code>&amp;</code>), angle brackets (<code>&lt;</code>, <code>&gt;</code>), or double quotes break HTML rendering or introduce Cross-Site Scripting (XSS) risks. CSV Toolbox converts all reserved characters into standard HTML5 entities (<code>&amp;amp;</code>, <code>&amp;lt;</code>, <code>&amp;gt;</code>).</li>
+      <li><strong>Responsive CSS Compatibility:</strong> Our tool generates clean, unstyled semantic markup (<code>&lt;table&gt;&lt;thead&gt;&lt;tbody&gt;</code>), allowing web developers to apply modern CSS frameworks (Tailwind, Bootstrap) with zero style overrides.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      Developers frequently script HTML table generation and extraction using Python:
+    </p>
+
+    <h3>1. Python &amp; Pandas (Clean HTML Table Generation)</h3>
+    <pre><code>import pandas as pd
+
+# Load CSV and export clean HTML table without inline styles
+df = pd.read_csv("financial_summary.csv")
+html_code = df.to_html(index=False, classes="table table-striped", border=0)
+
+with open("summary.html", "w", encoding="utf-8") as f:
+    f.write(html_code)
+
+print("Generated clean HTML table.")</code></pre>
+
+    <h3>2. Python &amp; BeautifulSoup (Extract HTML Table to CSV)</h3>
+    <pre><code>import csv
+from bs4 import BeautifulSoup
+
+# Scrape and extract table from HTML file to CSV
+with open("webpage.html", "r", encoding="utf-8") as f:
+    soup = BeautifulSoup(f, "html.parser")
+
+table = soup.find("table")
+with open("scraped_data.csv", "w", encoding="utf-8", newline="") as out:
+    writer = csv.writer(out)
+    for row in table.find_all("tr"):
+        cells = [c.get_text(strip=True) for c in row.find_all(["th", "td"])]
+        if cells:
+            writer.writerow(cells)</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Formatting Tips</h2>
+    <p>
+      Ensure perfect table extraction and rendering with these best practices:
+    </p>
+    <ul>
+      <li><strong>Multiple Tables in One HTML Document:</strong> If an HTML page contains multiple tables, the converter automatically targets the largest data table. For nested tables, isolate the target <code>&lt;table&gt;</code> snippet first.</li>
+      <li><strong>Colspan and Rowspan Handling:</strong> Complex merged cells are extracted cleanly based on visible cell text.</li>
+      <li><strong>Need Markdown Instead?</strong> If you are publishing to GitHub documentation or Notion wikis, use our <a href="/csv-to-markdown/">CSV to Markdown Converter</a>.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>
@@ -179,30 +224,52 @@ const schema = [
               var doc = parser.parseFromString(htmlStr, 'text/html');
               var table = doc.querySelector('table');
               if (!table) {
-                // Let worker fallback handle it
-                worker.postMessage({ op: 'html-to-csv', file: file });
+                status.textContent = 'Error: No <table> element found in HTML file.';
+                runBtn.disabled = false;
                 return;
               }
+
+              var rows = [];
               var trs = table.querySelectorAll('tr');
-              var parsedRows = [];
               trs.forEach(function (tr) {
+                var row = [];
                 var cells = tr.querySelectorAll('th, td');
-                if (cells.length) {
-                  var rowData = [];
-                  cells.forEach(function (cell) {
-                    rowData.push(cell.textContent.trim());
-                  });
-                  parsedRows.push(rowData);
-                }
+                cells.forEach(function (c) {
+                  var text = c.textContent || '';
+                  text = text.replace(/\r?\n/g, ' ').trim();
+                  row.push(text);
+                });
+                if (row.length > 0) rows.push(row);
               });
-              if (!parsedRows.length) {
-                worker.postMessage({ op: 'html-to-csv', file: file });
+
+              if (!rows.length) {
+                status.textContent = 'Error: The table appears to be empty.';
+                runBtn.disabled = false;
                 return;
               }
-              worker.postMessage({ op: 'html-to-csv', file: file, content: parsedRows });
+
+              var csvLines = rows.map(function (r) {
+                return r.map(function (val) {
+                  if (val.indexOf(',') !== -1 || val.indexOf('"') !== -1 || val.indexOf('\n') !== -1) {
+                    return '"' + val.replace(/"/g, '""') + '"';
+                  }
+                  return val;
+                }).join(',');
+              });
+
+              var csvContent = csvLines.join('\r\n');
+              var outName = (file.name.replace(/\.[^.]+$/, '') || 'table') + '.csv';
+              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              T.addResult(resultsEl, { name: outName, content: blob, size: blob.size });
+              status.textContent = 'Done — successfully extracted ' + rows.length.toLocaleString() + ' rows to CSV.';
+              runBtn.disabled = false;
             } catch (err) {
-              worker.postMessage({ op: 'html-to-csv', file: file });
+              status.textContent = 'Error parsing HTML: ' + err.message;
+              runBtn.disabled = false;
             }
+          }).catch(function (err) {
+            status.textContent = 'Error reading file: ' + err.message;
+            runBtn.disabled = false;
           });
         }
       });

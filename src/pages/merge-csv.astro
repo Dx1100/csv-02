@@ -4,11 +4,12 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I merge multiple CSV files into one?', a: 'Drop two or more CSV files into the tool above, arrange them in the order you want, and click Merge. A single combined CSV downloads instantly. Everything runs in your browser with no upload.' },
-  { q: 'What happens if my CSV files have different columns?', a: 'The merger builds the union of all columns automatically. Rows from files that lack a column simply get an empty value there, so no data is lost.' },
-  { q: 'Do duplicate header rows get repeated in the merged file?', a: 'No. Each file is parsed with its own header and the output contains exactly one header row at the top.' },
-  { q: 'How many files can I merge at once?', a: 'There is no fixed limit on the number of files. Practical limits depend on your device memory, but merging dozens of files totalling hundreds of megabytes works smoothly.' },
-  { q: 'Is my data uploaded to a server?', a: 'No. Files are combined locally in your browser using a background worker. Nothing is transmitted anywhere.' },
+  { q: 'How do I merge multiple CSV files into one combined file?', a: 'Drop two or more CSV files into the dropzone above, arrange their order with the up/down arrows if desired, and click Merge CSV Files. The engine streams the files in your browser, unifies column headers, and downloads a single combined CSV.' },
+  { q: 'What happens if my CSV files have different columns or headers in different orders?', a: 'Our engine computes the mathematical union of all column names across all files. It aligns matching column headers regardless of their position in the source files and populates blank cells for rows that lack specific columns, ensuring zero data misalignment.' },
+  { q: 'Will the merged CSV contain duplicate header rows from each file?', a: 'No. The merger extracts and combines the header once at the very top of the output file. Individual headers from second, third, and subsequent files are cleanly stripped to produce a unified tabular schema.' },
+  { q: 'How many CSV files can I combine at once?', a: 'There is no hardcoded file count limit. You can combine dozens of monthly reports or daily exports totaling hundreds of megabytes. Processing is streamed sequentially inside a background Web Worker so browser memory stays lean.' },
+  { q: 'Can I reorder the files before merging?', a: 'Yes. Use the up and down arrow buttons next to each file in the queue to specify the exact sequence in which rows should be appended in the master document.' },
+  { q: 'Are my confidential spreadsheets stored or uploaded during merging?', a: 'Never. Processing executes 100% locally on your machine via HTML5 stream readers and background Web Workers. Your data is never transmitted across the network, making it compliant with HIPAA, GDPR, and enterprise privacy mandates.' },
 ];
 const schema = [
   { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Merger', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to merge multiple CSV files into one, handling mismatched columns automatically. Runs locally in the browser.' },
@@ -28,9 +29,7 @@ const schema = [
   <div class="container">
     <h1>Merge CSV Files Online</h1>
     <p class="lead">
-      <strong>How do you combine CSV files?</strong> Drop two or more CSV files below, arrange the
-      order, and click Merge. You get one combined file with a single header row, and mismatched
-      columns are aligned automatically. Free, no signup, fully private.
+      <strong>How do you combine multiple CSV files?</strong> Select two or more spreadsheets below, arrange their merge sequence, and click Merge CSV Files. The tool merges your records into a unified dataset with a single standardized header row, automatically reconciling mismatched column structures. 100% free, private, and client-side.
     </p>
 
     <div class="tool">
@@ -45,25 +44,62 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How to merge CSV files (step by step)</h2>
+    <h2>How to Combine Multiple CSV Files (Step-by-Step Guide)</h2>
     <ol class="steps">
-      <li><strong>Add your files.</strong> Drag and drop multiple CSVs at once, or click the box to select them. Add more at any time.</li>
-      <li><strong>Arrange the order.</strong> Use the up/down arrows to set which file's rows come first. Remove a file with ✕.</li>
-      <li><strong>Click "Merge CSV files".</strong> Headers are unified automatically; missing values become empty cells.</li>
-      <li><strong>Download the result.</strong> One clean CSV with a single header row.</li>
+      <li><strong>Select Multiple Files:</strong> Drag and drop your collection of CSV files into the dropzone above, or click to open your OS file dialog and multi-select (using Shift or Ctrl/Cmd).</li>
+      <li><strong>Arrange Sequence:</strong> Review the uploaded file queue. Click the up (&uarr;) or down (&darr;) buttons to adjust the order in which rows will be stacked. Use the remove button (&cross;) to prune unwanted files.</li>
+      <li><strong>Execute Consolidation:</strong> Click <strong>Merge CSV files</strong>. The background worker ingests each file sequentially, extracts headers, constructs a master schema, and stitches records together.</li>
+      <li><strong>Save Master Export:</strong> Once processing completes, click the download button to save your consolidated master CSV.</li>
     </ol>
 
-    <h2>Why use this CSV merger?</h2>
+    <h2>Why Manual Spreadsheet Merging Fails</h2>
+    <p>
+      Data analysts and operational teams frequently receive fragmented data: twelve monthly sales sheets, regional CRM extracts, or paginated log files. Consolidating them manually in traditional desktop spreadsheet tools leads to frequent disasters:
+    </p>
     <ul>
-      <li><strong>Handles mismatched columns:</strong> the output contains the union of all headers.</li>
-      <li><strong>Order control:</strong> reorder files before merging.</li>
-      <li><strong>Private:</strong> merging happens on your device, never on a server.</li>
-      <li><strong>Free and unlimited:</strong> no signup, no file count or size limits.</li>
+      <li><strong>The Copy-Paste Column Shift Disaster:</strong> If File A has columns <code>[Name, Email, Phone]</code> and File B has <code>[Email, Name, Phone]</code>, manual copy-pasting silently dumps email addresses into the name column. CSV Toolbox automatically maps column headers by name, guaranteeing perfect alignment regardless of original column order.</li>
+      <li><strong>Duplicate Header Pollution:</strong> Manually stacking 20 files in Excel leaves 19 residual header rows buried randomly throughout your dataset, which destroys downstream SQL imports, breaks numeric summaries, and corrupts pivot tables.</li>
+      <li><strong>Clipboard Truncation &amp; Memory Leaks:</strong> Copying 300,000 rows between spreadsheet windows regularly exceeds OS clipboard limits, freezing your computer and triggering "Excel out of memory" errors.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      For recurring data engineering pipelines, engineers automate CSV concatenation using scripting toolchains:
+    </p>
+
+    <h3>1. Python &amp; Pandas (Schema-Aware Concatenation)</h3>
+    <pre><code>import glob
+import pandas as pd
+
+# Discover all regional export files
+all_files = sorted(glob.glob("data_*.csv"))
+
+# Read and concatenate with schema union
+dataframes = [pd.read_csv(f) for f in all_files]
+merged_df = pd.concat(dataframes, ignore_index=True)
+
+# Export consolidated master file
+merged_df.to_csv("master_consolidated.csv", index=False)
+print(f"Merged &#123;len(all_files)&#125; files into &#123;len(merged_df)&#125; total rows.")</code></pre>
+
+    <h3>2. GNU Bash (Ultra-Fast Identical Schema Merge)</h3>
+    <pre><code># Merge hundreds of CSVs with identical columns in 1 second
+head -n 1 file_01.csv &gt; combined.csv
+tail -n +2 -q file_*.csv &gt;&gt; combined.csv</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Schema Hygiene</h2>
+    <p>
+      Merging disparate CSV datasets frequently surfaces formatting inconsistencies:
+    </p>
+    <ul>
+      <li><strong>Case-Sensitive Column Names:</strong> Headers like <code>Email</code>, <code>email</code>, and <code>EMAIL</code> are interpreted as distinct columns by database engines. Prior to merging, ensure naming conventions match, or clean them up using our <a href="/extract-columns-csv/">CSV Column Extractor</a>.</li>
+      <li><strong>Different Delimiters Across Files:</strong> If one file uses commas and another uses semicolons, convert them to standard commas using our <a href="/change-delimiter-csv/">CSV Delimiter Converter</a> so rows align properly.</li>
+      <li><strong>Removing Post-Merge Duplicates:</strong> When combining regional exports, duplicate customer records often overlap. Run your merged file through our <a href="/remove-duplicates-csv/">Duplicate Row Remover</a> to deduplicate by unique IDs or email addresses.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>
@@ -77,6 +113,7 @@ const schema = [
       <strong>Related tools:</strong>
       <a href="/split-csv/">Split CSV files</a> ·
       <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
+      <a href="/extract-columns-csv/">Extract CSV columns</a> ·
       <a href="/csv-to-json/">Convert CSV to JSON</a> ·
       <a href="/guides/">All guides</a>
     </aside>

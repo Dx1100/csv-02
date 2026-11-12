@@ -4,11 +4,12 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I change the delimiter of a CSV file?', a: 'Upload your file into the tool above, choose the target separator you want to convert to (e.g. Semicolon, Tab, Pipe or Comma) and click Change Delimiter. The converted CSV downloads instantly. Everything runs on your device, so your data remains private.' },
-  { q: 'Can this tool convert comma-separated files to semicolon-separated?', a: 'Yes. It automatically detects if your original file is comma-separated and parses it, then exports it with semicolons if you select the Semicolon option.' },
-  { q: 'What delimiters are supported?', a: 'We support conversion to standard commas (,), semicolons (;), tabs (\\t, which turns it into a TSV file), and pipes (|).' },
-  { q: 'Is there a limit on CSV file size?', a: 'There is no fixed limit. The file is processed locally using background stream workers, so files of several hundred megabytes convert quickly without freezing your browser.' },
-  { q: 'Is my data secure?', a: 'Yes, 100%. All processing occurs locally in your web browser. Your file is never uploaded to a server, making it safe for confidential or private business data.' }
+  { q: 'How do I change the delimiter of a CSV file online?', a: 'Upload your file into the dropzone above, select your desired target separator (Comma, Semicolon, Tab/TSV, or Pipe), and click Change Delimiter. The parser streams your data locally and downloads a cleanly re-delimited file instantly.' },
+  { q: 'Why does Excel put all my CSV data into Column A?', a: 'This occurs due to regional locale mismatches. Windows installations in Europe (Germany, France, Spain) expect semicolons as delimiters because the comma is reserved as the decimal separator. When opening a standard US comma CSV, European Excel fails to split columns. Converting commas to semicolons resolves this immediately.' },
+  { q: 'Will converting commas to semicolons break commas inside quoted text?', a: 'No. Our converter uses an RFC 4180 compliant finite-state parser. Commas enclosed within quotation marks (such as addresses like "New York, NY" or numerical descriptions) are preserved as literal text and never replaced with the target separator.' },
+  { q: 'What delimiters are supported by this online converter?', a: 'We support conversion to standard commas (,), semicolons (;), horizontal tabs (\\t for TSV workflows), and vertical pipe characters (|), commonly required by SAP, mainframe, and enterprise database systems.' },
+  { q: 'What is the maximum file size for delimiter conversion?', a: 'There is no hard file size cap. Because processing executes via client-side streaming inside an isolated HTML5 Web Worker, files containing hundreds of megabytes convert smoothly without browser tab crashes.' },
+  { q: 'Is my confidential data uploaded or cached on any server?', a: 'No. 100% of delimiter parsing and re-encoding executes inside your web browser. Your file never touches external servers or cloud buckets, ensuring strict data security.' },
 ];
 const schema = [
   { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Delimiter Changer', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to change CSV delimiters. Convert CSV separators from comma to semicolon, tab, pipe or custom separator locally in browser.' },
@@ -28,10 +29,7 @@ const schema = [
   <div class="container">
     <h1>Change CSV Delimiter Online</h1>
     <p class="lead">
-      <strong>How do you convert commas to semicolons or change CSV separators?</strong> Drop your CSV file below, 
-      select your target separator (like comma, semicolon, tab, or pipe), and click "Change Delimiter". 
-      Whether you need to convert semicolons to commas, change comma to tab, or convert tab-separated files to standard CSV, 
-      our tool automatically detects the original separator, parses it locally, and downloads your converted file instantly.
+      <strong>How do you convert commas to semicolons or change CSV separators?</strong> Drop your spreadsheet below, select your target separator (comma, semicolon, tab, or pipe), and click Change Delimiter. Whether fixing European Excel Column A bugs or preparing TSVs for machine learning pipelines, our tool parses your data locally with zero server uploads.
     </p>
 
     <div class="tool">
@@ -59,25 +57,74 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How to convert CSV separators (step by step)</h2>
+    <h2>How to Convert CSV Separators (Step-by-Step Guide)</h2>
     <ol class="steps">
-      <li><strong>Add your file.</strong> Drag and drop the CSV into the box above, or click it to browse. A preview of the first rows appears instantly.</li>
-      <li><strong>Pick a target delimiter.</strong> Select the output separator you want to convert the file to: comma, semicolon, tab, or pipe.</li>
-      <li><strong>Click "Change Delimiter".</strong> The file will be processed inside a background worker.</li>
-      <li><strong>Download the converted file.</strong> Save the new file directly to your device.</li>
+      <li><strong>Select Your Document:</strong> Drag and drop your delimited file into the dropzone above, or click to browse. The engine autodetects existing separators (comma, semicolon, tab, or pipe) and renders an instant table preview.</li>
+      <li><strong>Choose Your Destination Delimiter:</strong> Select your desired output separator from the dropdown:
+        <ul>
+          <li><strong>Semicolon ( ; ):</strong> Essential for opening CSVs in European versions of Excel (Germany, France, Netherlands) where comma is the decimal point.</li>
+          <li><strong>Comma ( , ):</strong> The standard global IETF RFC 4180 format for US databases, HubSpot, Salesforce, and Python/R.</li>
+          <li><strong>Tab ( \t ):</strong> Produces clean TSV files ideal for copy-pasting directly into spreadsheet grids or training NLP machine learning datasets.</li>
+          <li><strong>Pipe ( | ):</strong> Commonly mandated by legacy ERPs, SAP systems, and mainframe databases to prevent collisions with user-entered text.</li>
+        </ul>
+      </li>
+      <li><strong>Execute Re-encoding:</strong> Click <strong>Change Delimiter</strong>. The streaming Web Worker reads your dataset, re-quotes fields as necessary, and constructs the target syntax.</li>
+      <li><strong>Download Clean Output:</strong> Save your newly formatted file instantly to your device.</li>
     </ol>
 
-    <h2>Why use this CSV Delimiter Changer?</h2>
+    <h2>Why Simple Find-and-Replace Fails on Delimiters</h2>
+    <p>
+      Many users attempt to convert delimiters by opening their CSV in a basic text editor (such as Notepad or TextEdit) and running a global search-and-replace from <code>,</code> to <code>;</code>. This naive method corrupts data integrity:
+    </p>
     <ul>
-      <li><strong>Private by design:</strong> your files never leave your computer, keeping all conversions completely secure.</li>
-      <li><strong>No limits, no signup:</strong> convert commas to semicolons, commas to tabs, or pipes to commas as many times as you need.</li>
-      <li><strong>Visual validation:</strong> preview the table structure before exporting to verify your delimiters.</li>
-      <li><strong>Versatile separator converter:</strong> change commas to semicolons ( ; ), semicolons to commas ( , ), commas to tabs ( \t ), or change delimiters to pipes ( | ).</li>
+      <li><strong>Corrupting Address and Description Fields:</strong> If a customer address is stored as <code>"123 Main St, Suite 400"</code>, global find-and-replace converts it to <code>"123 Main St; Suite 400"</code>, splitting a single column into two broken fields in downstream applications.</li>
+      <li><strong>Escaped Quote Mismanagement:</strong> Under RFC 4180, fields containing delimiters, quotes, or newlines must be enclosed in double quotes. A simple find-and-replace does not calculate quote state boundaries, leading to parsing errors.</li>
+      <li><strong>Regional Locale Headaches in Excel:</strong> In English-speaking countries, Excel uses commas for CSVs and periods for decimals (<code>$10.50</code>). In Europe and Latin America, Excel uses commas for decimals (<code>10,50 &euro;</code>) and semicolons for CSVs. Opening an unaligned file results in Excel dumping entire rows into Column A.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      For recurring data pipeline engineering, developers convert delimiters via Python or Bash:
+    </p>
+
+    <h3>1. Python (Quote-Safe Delimiter Re-encoding)</h3>
+    <pre><code>import csv
+
+input_file = "source_semicolon.csv"
+output_file = "converted_comma.csv"
+
+# Ingest semicolon file and export standard comma CSV
+with open(input_file, "r", encoding="utf-8") as infile, \
+     open(output_file, "w", encoding="utf-8", newline="") as outfile:
+    reader = csv.reader(infile, delimiter=";")
+    writer = csv.writer(outfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
+    for row in reader:
+        writer.writerow(row)
+
+print("Delimiter conversion successfully completed.")</code></pre>
+
+    <h3>2. GNU Awk (Fast TSV to CSV Transformation)</h3>
+    <pre><code># Convert Tab-Separated TSV to Comma-Separated CSV safely
+awk -F'\t' -v OFS=',' '&#123;
+  for(i=1; i&lt;=NF; i++) &#123;
+    if ($i ~ /,/) $i = "\"" $i "\""
+  &#125;
+  print
+&#125;' input.tsv &gt; output.csv</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Formatting Tips</h2>
+    <p>
+      When changing delimiters across multi-system environments, verify these criteria:
+    </p>
+    <ul>
+      <li><strong>Header Integrity:</strong> Confirm that the target separator does not collide with unquoted column names. CSV Toolbox automatically quotes headers if they contain the target separator.</li>
+      <li><strong>Windows vs Unix Newlines:</strong> Some database bulk loaders require Windows CRLF (<code>\r\n</code>) while Unix tools prefer LF (<code>\n</code>). Our browser tool preserves native line breaks.</li>
+      <li><strong>Subsequent Operations:</strong> Need to split the converted file into smaller batches? Seamlessly transition to our <a href="/split-csv/">CSV Splitter</a>.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>
@@ -92,7 +139,8 @@ const schema = [
       <a href="/split-csv/">Split CSV files</a> ·
       <a href="/merge-csv/">Merge CSV files</a> ·
       <a href="/remove-duplicates-csv/">Remove duplicate rows</a> ·
-      <a href="/csv-to-json/">Convert CSV to JSON</a>
+      <a href="/csv-to-json/">Convert CSV to JSON</a> ·
+      <a href="/guides/">All guides</a>
     </aside>
   </div>
 

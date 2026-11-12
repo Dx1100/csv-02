@@ -68,13 +68,13 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How the conversion works</h2>
+    <h2>How the Bidirectional Conversion Works (Step-by-Step Guide)</h2>
     
     <h3>Direction 1: Converting CSV to Markdown Table</h3>
     <ol class="steps">
-      <li><strong>Select "CSV → Markdown":</strong> Choose this mode from the direction dropdown above.</li>
+      <li><strong>Select "CSV → Markdown":</strong> Choose this mode from the direction controls above.</li>
       <li><strong>Add your CSV or TSV file:</strong> Drag and drop your file into the box. A live preview of the top rows appears immediately.</li>
       <li><strong>Run the conversion:</strong> Click Convert. The tool reads your header row to define column names, adds a GFM separator row (<code>| --- | --- |</code>), wraps each row with pipe delimiters, and safely escapes internal pipes (<code>\|</code>) and line breaks (<code>&lt;br&gt;</code>).</li>
       <li><strong>Download or copy:</strong> Download your clean <code>.md</code> file or open it to copy the table directly into README files, documentation, or blog posts.</li>
@@ -82,21 +82,60 @@ const schema = [
 
     <h3>Direction 2: Converting Markdown Table to CSV</h3>
     <ol class="steps">
-      <li><strong>Select "Markdown → CSV":</strong> Switch the direction dropdown to enable Markdown table extraction.</li>
+      <li><strong>Select "Markdown → CSV":</strong> Switch the direction toggle to enable Markdown table extraction.</li>
       <li><strong>Upload your Markdown file:</strong> Drop your <code>.md</code>, <code>.markdown</code>, or <code>.txt</code> file containing a pipe-delimited table.</li>
       <li><strong>Extract spreadsheet rows:</strong> Click Convert. The parser scans the file, detects the table boundary, isolates column headers, discards formatting separator rows (e.g. <code>|:---|---:|</code>), unescapes pipe characters, and formats the output into standard comma-separated values.</li>
       <li><strong>Download your CSV:</strong> Save the resulting <code>.csv</code> file, ready for Excel, Google Sheets, Pandas, or database imports.</li>
     </ol>
 
-    <h2>Why convert with our local tool?</h2>
+    <h2>Why Manual Copy-Pasting Between Excel and Markdown Fails</h2>
+    <p>
+      Technical writers, open-source maintainers, and developers frequently need to publish tabular benchmarks in GitHub READMEs or Notion wikis. Copy-pasting directly from spreadsheets causes structural syntax errors:
+    </p>
     <ul>
-      <li><strong>True Bidirectional Conversion:</strong> Seamlessly move from CSV to Markdown tables and back from Markdown documents to CSV spreadsheets without needing two separate utilities.</li>
-      <li><strong>GitHub Flavored Markdown (GFM) Standard:</strong> Generated tables comply with GFM specification, rendering seamlessly on GitHub, GitLab, Reddit, Obsidian, Notion, and static site generators.</li>
-      <li><strong>Intelligent Character Escaping:</strong> Safely escapes vertical pipe characters (<code>|</code>) as <code>\|</code> and handles multi-line cells using <code>&lt;br&gt;</code> tags so rows never misalign.</li>
-      <li><strong>Zero Server Uploads:</strong> All parsing and file writing runs entirely inside your browser's Web Worker. Your data is private, fast, and never shared.</li>
+      <li><strong>Broken Pipe Delimiters:</strong> Markdown tables rely exclusively on vertical pipe characters (<code>|</code>) as cell dividers. If your cell values contain pipe characters (such as regex statements, Linux pipe commands, or logical OR operators), naive converters fail to escape them, causing tables to shatter into fragmented, misaligned columns.</li>
+      <li><strong>Newline Truncation:</strong> In GitHub Flavored Markdown (GFM), a raw line break signals the start of a completely new row. Cell descriptions with embedded paragraphs immediately break table formatting unless converted to inline HTML <code>&lt;br&gt;</code> tags.</li>
+      <li><strong>Missing Separator Syntax:</strong> Unlike HTML, Markdown requires a rigid delimiter alignment line (<code>| --- | --- |</code>) between row 1 and the data rows. Manual text formatting invariably misses trailing pipes, causing Markdown renderers to treat tables as unformatted raw text.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      For continuous documentation pipelines, developers automate CSV-to-Markdown conversions using Python or terminal scripts:
+    </p>
+
+    <h3>1. Python &amp; Pandas (Native Markdown Export)</h3>
+    <pre><code>import pandas as pd
+
+# Load CSV and serialize to GFM Markdown table
+df = pd.read_csv("benchmarks.csv")
+markdown_table = df.to_markdown(index=False)
+
+with open("BENCHMARKS.md", "w", encoding="utf-8") as f:
+    f.write(markdown_table)
+
+print("Generated GitHub-compliant Markdown table.")</code></pre>
+
+    <h3>2. Linux CLI (Fast Awk Pipe Formatter)</h3>
+    <pre><code># Quick terminal conversion of CSV to basic Markdown pipe table
+awk -F',' 'BEGIN &#123;OFS=" | "&#125;
+NR==1 &#123;
+  print "| " $0 " |";
+  for (i=1; i&lt;=NF; i++) sep[i]="---";
+  print "| " sep[1], sep[2], sep[3] " |"
+&#125;
+NR&gt;1 &#123;print "| " $0 " |"&#125;' input.csv &gt; output.md</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Formatting Tips</h2>
+    <p>
+      Ensure clean Markdown rendering across diverse hosting platforms with these checks:
+    </p>
+    <ul>
+      <li><strong>Column Alignment Syntax:</strong> GFM supports text justification using colons: <code>| :--- |</code> for left-aligned, <code>| :---: |</code> for centered, and <code>| ---: |</code> for right-aligned numbers.</li>
+      <li><strong>Handling Raw HTML Inside Cells:</strong> If your cells contain bold, italics, or hyperlinks, GFM parses them cleanly inside pipe rows without requiring extra escaping.</li>
+      <li><strong>Need HTML Instead?</strong> If your content management system requires raw table markup rather than Markdown, try our <a href="/csv-to-html/">CSV to HTML Table Converter</a>.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>

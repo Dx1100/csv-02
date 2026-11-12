@@ -4,11 +4,12 @@ import AdSlot from '../components/AdSlot.astro';
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const faqs = [
-  { q: 'How do I remove duplicate rows from a CSV file?', a: 'Drop your CSV into the tool above and click "Remove duplicates". The first occurrence of each row is kept, repeats are removed, and a cleaned file downloads instantly. It all runs locally in your browser.' },
-  { q: 'Can I deduplicate based on specific columns only?', a: 'Yes. After loading a file, tick the columns that should define a duplicate (for example just the Email column). Rows matching on those columns are treated as duplicates even if other columns differ.' },
-  { q: 'Which duplicate row is kept?', a: 'The first occurrence in file order is kept; later repeats are removed. The original row order is preserved in the output.' },
-  { q: 'How many duplicates were removed?', a: 'After processing, the tool reports exactly how many duplicate rows were removed and how many unique rows were kept.' },
-  { q: 'Is my data safe?', a: 'Yes. Deduplication happens entirely on your device. The file is never uploaded, so it is safe for customer lists and other sensitive data.' },
+  { q: 'How do I remove duplicate rows from a CSV file online?', a: 'Drop your CSV spreadsheet into the tool above, review the detected columns, and click Remove Duplicates. By default, the engine checks for identical matches across all columns, keeps the first occurrence, purges subsequent copies, and downloads a clean CSV.' },
+  { q: 'Can I deduplicate based on specific columns like Email or User ID?', a: 'Yes. After loading your file, check the specific column boxes (e.g., Email or Customer_ID). The engine will identify duplicates strictly based on matches in those selected fields, even if timestamps or notes in other columns vary.' },
+  { q: 'Which duplicate record is kept when duplicates are discovered?', a: 'The tool preserves the very first occurrence of each unique record encountered in the original file order. All subsequent duplicate rows are discarded, maintaining your original sequence.' },
+  { q: 'How does this tool handle trailing spaces or letter casing in duplicates?', a: 'Standard CSV deduplication performs exact character matching. If your data contains inconsistent whitespace or mixed casing (e.g., "User@Example.com " vs "user@example.com"), consider normalizing casing before deduplication to catch all fuzzy variations.' },
+  { q: 'What is the maximum file size supported for deduplication?', a: 'Because the engine uses streaming hash indexing inside an isolated background Web Worker, datasets containing hundreds of thousands of rows and 200MB+ in size can be processed on a standard computer without browser locking.' },
+  { q: 'Is my customer list or proprietary data uploaded to an external server?', a: 'Never. Processing executes 100% locally inside your web browser. No row data, hashes, or identifiers are ever transmitted across the internet, ensuring full compliance with GDPR and corporate security protocols.' },
 ];
 const schema = [
   { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV Duplicate Remover', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online tool to remove duplicate rows from CSV files, across all columns or selected columns only. Runs locally in the browser.' },
@@ -28,9 +29,7 @@ const schema = [
   <div class="container">
     <h1>Remove Duplicates From CSV Online</h1>
     <p class="lead">
-      <strong>How do you remove duplicate rows from a CSV?</strong> Drop your file below and click
-      "Remove duplicates". Optionally pick which columns define a duplicate (e.g. just Email). The
-      cleaned file downloads instantly, with a count of removed rows. Free and fully private.
+      <strong>How do you remove duplicate rows from a CSV?</strong> Drop your spreadsheet below and click Remove Duplicates. Clean entire rows or target specific primary keys like Email or Customer ID. The cleaned file downloads instantly, complete with a verified report of removed duplicates. 100% free, private, and client-side.
     </p>
 
     <div class="tool">
@@ -54,17 +53,64 @@ const schema = [
       <ul class="results" id="results"></ul>
     </div>
 
-    <AdSlot />
+    <AdSlot format="horizontal" />
 
-    <h2>How to remove duplicate rows (step by step)</h2>
+    <h2>How to Remove Duplicate Rows (Step-by-Step Guide)</h2>
     <ol class="steps">
-      <li><strong>Add your file.</strong> Drag and drop the CSV or click the box to browse.</li>
-      <li><strong>Choose match columns (optional).</strong> By default the entire row must match to count as a duplicate. Tick specific columns, like Email or ID, to dedupe on those alone.</li>
-      <li><strong>Click "Remove duplicates".</strong> The first occurrence of each row is kept, in the original order.</li>
-      <li><strong>Download the cleaned file</strong> and see exactly how many duplicates were removed.</li>
+      <li><strong>Load Your Spreadsheet:</strong> Drag and drop your CSV into the dropzone above, or click to browse your local device. The tool displays a live preview of your top 6 rows.</li>
+      <li><strong>Define Your Deduplication Scope:</strong>
+        <ul>
+          <li><strong>Full-Row Deduplication (Default):</strong> Leave all checkboxes unchecked. Rows are considered duplicate only if every single column contains identical values.</li>
+          <li><strong>Key-Column Deduplication:</strong> Check specific identifier columns (e.g., <code>Email</code>, <code>Phone</code>, or <code>Order_ID</code>). Rows matching on these specific fields are pruned, even if other non-critical columns differ.</li>
+        </ul>
+      </li>
+      <li><strong>Execute Deduplication:</strong> Click <strong>Remove duplicates</strong>. The streaming engine scans each row through an optimized memory hash set, filtering duplicate records in milliseconds.</li>
+      <li><strong>Download Clean File:</strong> Review the summary counter showing exact duplicates purged and unique rows preserved, then click download to save your cleaned CSV.</li>
     </ol>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Why Spreadsheet Software Fails at Deduplication</h2>
+    <p>
+      Desktop tools like Excel and Google Sheets include built-in deduplication features, but data analysts frequently encounter silent failures when processing real-world commercial exports:
+    </p>
+    <ul>
+      <li><strong>Invisible Whitespace Blindness:</strong> Excel evaluates strings strictly by character byte values. If one customer record contains a trailing space (e.g., <code>"john@company.com "</code>) and another does not (<code>"john@company.com"</code>), Excel treats them as completely unique, silently leaving dirty duplicates in your marketing list.</li>
+      <li><strong>System Freezes on Large Files:</strong> Excel’s "Remove Duplicates" dialog creates massive internal comparison trees in memory. On datasets exceeding 150,000 rows, this frequently causes Excel to hang, show "Not Responding", or crash completely without recovery.</li>
+      <li><strong>Arbitrary Record Deletion:</strong> Spreadsheet software often provides zero transparency regarding which record was retained and which was purged when non-matching columns exist. CSV Toolbox guarantees deterministic behavior: the first occurrence is always kept, and later repeats are cleanly removed.</li>
+    </ul>
+
+    <h2>Developer Automation: Command-Line &amp; Script Alternatives</h2>
+    <p>
+      For backend ETL pipelines, developers automate CSV deduplication using specialized command-line tools and Python scripts:
+    </p>
+
+    <h3>1. Python &amp; Pandas (Deduplicate by Subset Columns)</h3>
+    <pre><code>import pandas as pd
+
+# Load large CSV export
+df = pd.read_csv("contacts_export.csv", low_memory=False)
+
+# Deduplicate by primary key column (keeping first record)
+df_clean = df.drop_duplicates(subset=["email"], keep="first")
+
+# Export clean results
+df_clean.to_csv("contacts_clean.csv", index=False)
+print(f"Removed &#123;len(df) - len(df_clean)&#125; duplicate records.")</code></pre>
+
+    <h3>2. GNU Awk (Instant Full-Row Streaming Deduplication)</h3>
+    <pre><code># Fast in-memory deduplication preserving original line order
+awk '!seen[$0]++' dirty_data.csv &gt; clean_data.csv</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Data Hygiene</h2>
+    <p>
+      To ensure pristine data hygiene before marketing campaigns or database migrations, keep these best practices in mind:
+    </p>
+    <ul>
+      <li><strong>Case Normalization:</strong> Database lookups often treat <code>User@Domain.com</code> and <code>user@domain.com</code> as identical. If your source system has mixed casing, consider converting columns to lowercase prior to deduplication.</li>
+      <li><strong>Multi-Field Composite Keys:</strong> For eCommerce or logistics data where users may have multiple orders, select both <code>Customer_ID</code> and <code>Order_Date</code> to remove genuine double-clicks while preserving legitimate repeat orders.</li>
+      <li><strong>Converting Delimiters:</strong> If your export uses European semicolons, convert them to standard commas using our <a href="/change-delimiter-csv/">CSV Delimiter Converter</a> before running deduplication.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
     <div class="faq">
       {faqs.map((f) => (
         <details>
@@ -78,6 +124,7 @@ const schema = [
       <strong>Related tools:</strong>
       <a href="/split-csv/">Split CSV files</a> ·
       <a href="/merge-csv/">Merge CSV files</a> ·
+      <a href="/change-delimiter-csv/">Change CSV delimiter</a> ·
       <a href="/csv-to-json/">Convert CSV to JSON</a> ·
       <a href="/guides/">All guides</a>
     </aside>
