@@ -1,0 +1,321 @@
+---
+import Base from '../layouts/Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const faqs = [
+  { q: 'How do I convert a CSV file to a printable PDF table?', a: 'Upload your CSV file into the dropzone above, select your desired page orientation (Portrait or Landscape), and click Generate PDF Table. The tool parses your spreadsheet, paginates data across pages with repeating headers, and downloads the PDF instantly.' },
+  { q: 'Can I format wide CSV files with many columns into PDF?', a: 'Yes. For spreadsheets with more than 5 or 6 columns, select Landscape orientation. The auto-layout engine automatically scales font sizes and cell padding so all columns fit cleanly without truncation.' },
+  { q: 'Does the PDF table repeat column headers on every page?', a: 'Yes. Our generator repeats your table column headers at the top of every single printed page, making multi-page reports and inventories easy to read.' },
+  { q: 'Is my spreadsheet uploaded to any server during PDF creation?', a: 'No. All parsing and PDF rendering occurs entirely inside your local browser memory using JavaScript. Your rows and customer data are never transmitted over the internet.' },
+  { q: 'What is the maximum number of CSV rows I can convert to PDF?', a: 'The tool easily renders tables with thousands of rows. For very large datasets (10,000+ rows), generating a single PDF document may take several seconds as the browser calculates page splits in memory.' },
+  { q: 'Can I convert a PDF document back into a CSV spreadsheet?', a: 'Yes. Switch the direction toggle to "PDF → CSV" or visit our dedicated PDF to CSV Converter to extract tabular data from digital statements and reports.' },
+];
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'CSV to PDF Converter', url: pageUrl, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, description: 'Free online CSV to PDF table converter. Convert CSV spreadsheets to cleanly paginated, printable PDF tables locally in your browser.' },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+    { '@type': 'ListItem', position: 2, name: 'CSV to PDF Converter', item: pageUrl },
+  ] },
+];
+---
+
+<Base
+  title="Convert CSV to PDF Online Free (and PDF to CSV) — Beautiful Table Layouts"
+  description="Convert CSV spreadsheets to formatted PDF tables online free. Runs 100% in your browser. Choose page orientation, font scale, and auto-paginate large datasets."
+  schema={schema}
+>
+  <div class="container">
+    <h1>Convert CSV to PDF Online</h1>
+    <p class="lead">
+      <strong>How do you convert a CSV spreadsheet into a professional PDF table?</strong> Drop your file below, choose your page orientation, and click Generate PDF Table. Our layout engine calculates column widths, applies alternating row stripes, and repeats table headers on every page. 100% free, private, and runs entirely in your browser.
+    </p>
+
+    <div class="tool">
+      <div class="direction-container">
+        <div class="direction-info">
+          <span class="direction-badge"><span class="direction-badge-dot"></span> Conversion Direction</span>
+          <p class="direction-label">Select conversion mode:</p>
+        </div>
+        <div class="direction-btn-group" role="tablist" aria-label="Conversion Direction">
+          <button type="button" class="direction-btn active" data-dir="c2p" role="tab" aria-selected="true">
+            <span>CSV</span> <span class="arrow-icon">→</span> <span>PDF</span>
+          </button>
+          <button type="button" class="direction-btn" data-dir="p2c" role="tab" aria-selected="false">
+            <span>PDF</span> <span class="arrow-icon">→</span> <span>CSV</span>
+          </button>
+        </div>
+        <select id="direction" class="direction-select-sync" aria-label="Conversion direction">
+          <option value="c2p" selected>CSV → PDF</option>
+          <option value="p2c">PDF → CSV</option>
+        </select>
+      </div>
+
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a file or drag and drop it here">
+        <p><strong id="dz-label">Drop your CSV file here</strong> or click to browse</p>
+        <p class="muted">Processed locally — never uploaded</p>
+      </div>
+      <input type="file" id="file-input" accept=".csv,text/csv" />
+      <p class="status" id="file-name" hidden></p>
+
+      <div id="pdf-settings" style="margin: 1.25rem 0; display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; justify-content: center;">
+        <label style="font-size: 0.9rem; font-weight: 500; color: var(--ink);">
+          Orientation:
+          <select id="orientation" style="margin-left: 0.5rem; padding: 0.35rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; background: #fff;">
+            <option value="auto" selected>Auto-Detect (Based on columns)</option>
+            <option value="portrait">Portrait (Tall)</option>
+            <option value="landscape">Landscape (Wide)</option>
+          </select>
+        </label>
+        <label style="font-size: 0.9rem; font-weight: 500; color: var(--ink);">
+          Page Size:
+          <select id="page-size" style="margin-left: 0.5rem; padding: 0.35rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; background: #fff;">
+            <option value="a4" selected>A4 Standard</option>
+            <option value="letter">US Letter</option>
+          </select>
+        </label>
+        <label style="font-size: 0.9rem; font-weight: 500; color: var(--ink);">
+          Theme:
+          <select id="theme" style="margin-left: 0.5rem; padding: 0.35rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; background: #fff;">
+            <option value="teal" selected>Teal Accent</option>
+            <option value="dark">Dark Slate</option>
+            <option value="plain">Minimalist / Plain</option>
+          </select>
+        </label>
+      </div>
+
+      <button class="btn" id="run" disabled>Generate PDF Table</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <AdSlot format="horizontal" />
+
+    <h2>How to Convert CSV to a Formatted PDF (Step-by-Step Guide)</h2>
+    <ol class="steps">
+      <li><strong>Select Direction:</strong> Choose <strong>CSV → PDF</strong> to style spreadsheets into printable PDF tables, or <strong>PDF → CSV</strong> to extract raw tabular data from PDF documents.</li>
+      <li><strong>Select Your Source File:</strong> Drag and drop your CSV file into the dropzone above, or click to browse. The file name and size will be verified immediately.</li>
+      <li><strong>Configure Print Layout:</strong> Select your preferred page orientation (Auto-detect automatically picks Landscape for files with >5 columns), page size (A4 or US Letter), and color theme.</li>
+      <li><strong>Generate PDF in Browser:</strong> Click <strong>Generate PDF Table</strong>. The client-side engine calculates cell widths, handles text wrapping, repeats headers on each page break, and compiles the PDF.</li>
+      <li><strong>Download Printable PDF:</strong> Click the generated download button to save your formatted <code>.pdf</code> file.</li>
+    </ol>
+
+    <h2>Why Exporting Large Tables to PDF Fails in Office Suites</h2>
+    <p>
+      Exporting spreadsheets to PDF in Microsoft Excel or LibreOffice Calc is notoriously frustrating for professionals:
+    </p>
+    <ul>
+      <li><strong>Orphaned Split Columns:</strong> When a spreadsheet has 10 columns, Excel frequently prints columns 1 through 7 on page 1, and pushes columns 8 through 10 onto completely separate pages, creating unusable disjointed printouts.</li>
+      <li><strong>Missing Headers on Subsequent Pages:</strong> By default, office software prints table headers only on page 1. Readers inspecting page 15 have no idea what each numerical column represents.</li>
+      <li><strong>Severe Layout Shifts:</strong> Manual print area configuration requires adjusting margins, page breaks, and scale percentages by trial and error. Our tool automatically calculates optimal cell padding and repeats headers across all pages.</li>
+    </ul>
+
+    <h2>Formatting Tips for Wide Spreadsheets</h2>
+    <p>
+      To ensure your generated PDF looks clean, executive-ready, and easy to read:
+    </p>
+    <ul>
+      <li><strong>Use Landscape for Wide Datasets:</strong> If your dataset exceeds 5 columns, Landscape mode provides 40% more horizontal breathing room for text columns and financial figures.</li>
+      <li><strong>Prune Redundant Columns First:</strong> If your CSV contains 30+ internal database IDs or metadata timestamps, use our <a href="/extract-columns-csv/">Column Extractor</a> to isolate the 6–8 critical columns before creating your PDF.</li>
+      <li><strong>Repeating Headers:</strong> Our engine automatically locks the header row at the top of every generated page and prints page numbers in the footer.</li>
+    </ul>
+
+    <h2>Developer Automation: Python &amp; Command-Line Alternatives</h2>
+    <p>
+      Developers needing automated, recurring CSV-to-PDF reports often script transformations using Python:
+    </p>
+
+    <h3>1. Python with ReportLab &amp; Pandas</h3>
+    <pre><code>import pandas as pd
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+
+# Load CSV data
+df = pd.read_csv("sales_report.csv")
+data = [df.columns.tolist()] + df.values.tolist()
+
+# Build PDF document
+doc = SimpleDocTemplate("sales_report.pdf", pagesize=landscape(letter))
+t = Table(data, repeatRows=1)
+t.setStyle(TableStyle([
+    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0d9488')),
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+    ('FONTSIZE', (0, 0), (-1, -1), 8),
+]))
+doc.build([t])
+print("Generated PDF report with repeating headers.")</code></pre>
+
+    <h3>2. Linux CLI: WeasyPrint (HTML/CSS to PDF)</h3>
+    <pre><code># Convert CSV to HTML table first using our CLI or python
+python -c 'import pandas as pd; pd.read_csv("data.csv").to_html("table.html")'
+
+# Render beautiful PDF with CSS page-break rules
+weasyprint table.html output_report.pdf</code></pre>
+
+    <h2>Edge-Case Troubleshooting &amp; Presentation Tips</h2>
+    <p>
+      Keep these presentation guidelines in mind when generating PDF documents:
+    </p>
+    <ul>
+      <li><strong>Text Truncation vs Wrapping:</strong> Very long text strings (e.g. multi-paragraph notes) will wrap within table cells. If a single cell contains hundreds of words, consider trimming it beforehand.</li>
+      <li><strong>Special Characters &amp; Accents:</strong> Standard UTF-8 characters, currency symbols (€, £, $), and punctuation are supported smoothly.</li>
+      <li><strong>Need the Reverse?</strong> If you have an existing PDF document and need to extract its tables back into a spreadsheet, use our <a href="/pdf-to-csv/">PDF to CSV Converter</a>.</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq">
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+
+    <aside class="related">
+      <strong>Related tools:</strong>
+      <a href="/pdf-to-csv/">Convert PDF to CSV</a> ·
+      <a href="/extract-columns-csv/">Extract Specific Columns</a> ·
+      <a href="/csv-to-html/">Convert CSV to HTML</a> ·
+      <a href="/csv-viewer/">Large CSV Viewer</a> ·
+      <a href="/guides/">All guides</a>
+    </aside>
+  </div>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script is:inline src="/js/tool-common.js" defer></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var T = window.CSVTB, file = null;
+      var $ = function (id) { return document.getElementById(id); };
+      var dirSel = $('direction'), runBtn = $('run'), status = $('status'), resultsEl = $('results');
+      var orientSel = $('orientation'), sizeSel = $('page-size'), themeSel = $('theme');
+
+      T.setupDirectionButtons('direction');
+
+      dirSel.addEventListener('change', function () {
+        var c2p = dirSel.value === 'c2p';
+        $('dz-label').textContent = c2p ? 'Drop your CSV file here' : 'Drop your PDF document here';
+        $('file-input').accept = c2p ? '.csv,text/csv' : '.pdf,application/pdf';
+        runBtn.textContent = c2p ? 'Generate PDF Table' : 'Extract Tables to CSV';
+        $('pdf-settings').style.display = c2p ? 'flex' : 'none';
+        file = null;
+        $('file-name').hidden = true;
+        runBtn.disabled = true;
+      });
+
+      T.setupDropzone('dropzone', 'file-input', function (files) {
+        file = files[0];
+        $('file-name').textContent = 'Selected: ' + file.name + ' (' + T.formatBytes(file.size) + ')';
+        $('file-name').hidden = false;
+        runBtn.disabled = false;
+      });
+
+      function generatePdf(csvFile, options) {
+        return new Promise(function (resolve, reject) {
+          Papa.parse(csvFile, {
+            skipEmptyLines: 'greedy',
+            complete: function (results) {
+              try {
+                var data = results.data;
+                if (!data || data.length === 0) {
+                  return reject(new Error('CSV file is empty or could not be parsed.'));
+                }
+                var headers = data[0];
+                var rows = data.slice(1);
+
+                var orientation = options.orientation;
+                if (orientation === 'auto') {
+                  orientation = headers.length > 5 ? 'landscape' : 'portrait';
+                }
+
+                var { jsPDF } = window.jspdf;
+                var doc = new jsPDF({
+                  orientation: orientation,
+                  unit: 'pt',
+                  format: options.pageSize || 'a4'
+                });
+
+                var headBg = [13, 148, 136]; // Teal default
+                if (options.theme === 'dark') headBg = [30, 41, 59];
+                else if (options.theme === 'plain') headBg = [100, 116, 139];
+
+                var fontSize = headers.length > 8 ? 7 : (headers.length > 5 ? 8 : 9);
+
+                doc.autoTable({
+                  head: [headers],
+                  body: rows,
+                  startY: 36,
+                  margin: { top: 36, right: 30, bottom: 36, left: 30 },
+                  theme: 'striped',
+                  styles: {
+                    fontSize: fontSize,
+                    cellPadding: 3.5,
+                    overflow: 'linebreak'
+                  },
+                  headStyles: {
+                    fillColor: headBg,
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                  },
+                  alternateRowStyles: {
+                    fillColor: [248, 250, 252]
+                  },
+                  didDrawPage: function (data) {
+                    var str = 'Page ' + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(148, 163, 184);
+                    var pageSize = doc.internal.pageSize;
+                    var pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+                    var pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+                    doc.text(str, pageWidth - 40, pageHeight - 15, { align: 'right' });
+                  }
+                });
+
+                var pdfBlob = doc.output('blob');
+                resolve(pdfBlob);
+              } catch (err) {
+                reject(err);
+              }
+            },
+            error: function (err) {
+              reject(err);
+            }
+          });
+        });
+      }
+
+      runBtn.addEventListener('click', async function () {
+        if (!file) return;
+        resultsEl.innerHTML = '';
+        runBtn.disabled = true;
+
+        if (dirSel.value === 'c2p') {
+          status.textContent = 'Formatting PDF table…';
+          try {
+            var options = {
+              orientation: orientSel.value,
+              pageSize: sizeSel.value,
+              theme: themeSel.value
+            };
+            var pdfBlob = await generatePdf(file, options);
+            var outName = file.name.replace(/\.[^.]+$/, '') + '_table.pdf';
+            T.addResult(resultsEl, { name: outName, content: pdfBlob });
+            status.textContent = 'PDF generated successfully! Click Download below.';
+          } catch (err) {
+            status.textContent = 'Error: ' + err.message;
+          } finally {
+            runBtn.disabled = false;
+          }
+        } else {
+          window.location.href = '/pdf-to-csv/';
+        }
+      });
+    });
+  </script>
+</Base>
